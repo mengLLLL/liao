@@ -1,0 +1,221 @@
+extends ../layout
+block style
+	link(href="/css/topic.css", rel="stylesheet")
+block content
+	body.topic
+		.left
+			- console.log('host',host)
+			if (host=='true')
+				- console.log('if')
+				.up
+					#upSummary
+						.title 摘要
+						if summarys
+							.summary-box
+								each item in summarys
+									.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+										.summary-content #{item.chatContent}
+										.summary-owner
+											span.ownerName #{item.user.name} 发表于
+											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+			else
+				- console.log('else')
+				.up
+					#upSummary
+						.title 摘要
+						if summarys
+							.summary-box
+								each item in summarys
+									.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+										.summary-content #{item.chatContent}
+										.summary-owner
+											span.ownerName #{item.user.name} 发表于
+											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+				.down
+					#mySummary
+						.title 我的摘要
+						if collections
+							.summary-box
+								each item in collections
+									.summary.my-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+										.summary-content #{item.chatContent}
+										.summary-owner
+											span.ownerName #{item.user.name} 发表于
+											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+		.middle(data-userid=session.user.userId data-ownerid = topic.owner.id)
+			if topic.atUser
+				.at-msg
+					each item in topic.atUser
+						.at-item
+							span.at-node(data-chatid="#{item.chatItemId}" class='atItem') #{item.userName} @了你
+			.topicMsg-part#Title(data-id="#{topic.topicId}")
+				.topic-title #{topic.title}
+					span.brief  #{topic.brief}
+				.rest-time
+					if (moment().isBefore(topic.endAt))
+						span.end-time 截止时间
+							label #{moment(topic.endAt).format('YYYY.MM.DD')}
+						span.form-now 距今还有
+							label #{moment(topic.endAt,'YYYYMMDD').fromNow(true)}
+					else
+						.overdue 已逾期 #{moment(topic.endAt,'YYYYMMDD').fromNow(true)}
+				.setting
+					if (session.user.userId == topic.owner.id)
+						- var hostOrNot = true;
+							i.fa.fa-users.member-setting#membersSetting(data-hostornot="#{hostOrNot}")
+							i.fa.fa-cogs.topic-setting#setting
+					else
+						-var hostOrNot = false;
+							i.fa.fa-users.member-setting#membersSetting(data-hostornot="#{hostOrNot}")
+			div#tipChat 点击加载更多
+			div#hasNoRecord 没有更多的聊天记录了
+			.center-box#chatPart
+				if(chats)
+					each item in chats
+						- var collect_tag = false;
+						- var agree_tag = false;
+						each c in item.collect
+							if session.user.userId == c.user.id
+								- console.log('haha')
+								- collect_tag = true
+						each a in item.agree
+							if session.user.userId == a.user.id
+								- agree_tag = true
+						div.chat-item(data-chatitemid="#{item.chatItemId}" data-chatrecordid='#{topic.chatRecordId}')
+							.userMsg
+								a(href='#').avatar
+									img(src="#{item.user.avatar}")
+								span.name #{item.user.name}
+								span.time #{moment(item.createAt).format('YYYY.MM.DD HH:MM:SS')}
+							if(item.chat_type == 1)
+								if item.atwho.userId
+									- console.log('item.atwho.userId', item.atwho.userId==session.user.userId)
+									.chatItem(class="#{item.atwho.userId==session.user.userId?'impressed':'normal'}") #{item.chatContent}
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star":"fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true?"chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")":"chatCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")")
+								else
+									- console.log('collect_tag chat type ', collect_tag)
+									- console.log('chat type = 1 else')
+									.chatItem(class='normal') #{item.chatContent}
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true?"chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")":"chatCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")")
+							if(item.chat_type == 2)
+								if item.atwho.userId
+									.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed':'normal'}")
+										img.preview-img(src="#{item.chatContent}")
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+								else
+									.chatItem(class="normal")
+										img.preview-img(src="#{item.chatContent}")
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+							if(item.chat_type == 3)
+								if item.atwho.userId
+									.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed':'normal'}")
+										a(href="#{item.chatContent}") 点击下载
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+								else
+									.chatItem(class="normal")
+										a(href="#{item.chatContent}") 点击下载
+										span.fa.fa-ellipsis-h.chat-operate
+											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+			.chat-box
+				.input-box
+					textarea(id="chatContent")
+					a(href='#').fa.fa-send#chatSubmit
+					a(href='#').fa.fa-paperclip#addFile
+					.input-group
+						.file-upload-group
+							input#chooseFile(type="file" class="input-file")
+							input.input-file-upload(type="text" placeholder="点击选择文件")
+							input#project-logo(type="hidden")
+							button#confirmFile.btn.btn-default(onclick="uploadFile(this,'topic')") 上传
+							span.file-upload-tip
+		.right
+			.up
+				#topicFileCenter
+					.title
+						span 文件中心
+					.file-box
+						if topic.files.length > 0
+							each item in topic.files
+								- var c_tag = false
+								each u_item in item.collectors
+									if u_item.userId == session.user.userId
+										- c_tag = true
+								if item.file_type==1
+									.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername="#{item.uploader.name}") #{item.fileName}
+										i.fa(class= c_tag==true?"cancelCollect fa-star":"collectFile fa-star-o")
+										i.fa.fa-trash.deleteFile
+								else
+									.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername="#{item.uploader.name}")
+										a(href="#{item.source}") #{item.fileName} 下载
+										i.fa.fa-star-o.collectFile
+										i.fa.fa-trash.deleteFile
+			.down#topicTask
+				.title
+					span 任务中心
+					i.fa.fa-plus-circle#addNewTask
+				if subTask
+					.subTask-box
+						each item in subTask
+							.sub-item
+								.sub-task-title
+									a(href="/task?taskId=" + "#{item.taskId}") #{item.title}
+								.sub-task-owner 由#{item.owner.name}创建
+				else
+					div 暂无任务
+		.shade#memberSetting(data-teamId=session.team.teamId)
+			.member-shade
+				.shade-header 成员列表
+				.existed-member-list
+				.unexisted-member-list
+		.shade#addTask
+			form(role="form" ,name="sub-task")
+				.header 添加子任务
+				.input-group
+					label#taskTitle 任务名称
+					input(placeholder="请输入任务名称" name="task-title")
+					span.errorMsg.validTitle 名称不能为空
+				.input-group
+					label#taskContent 任务简述
+					textarea(placeholder="简要说明", name="task-content")
+				.input-group
+					label 任务截止日期
+					input#taskEndTime
+				button.m-btn#newTask 创建任务
+		.shade#topicSetting
+			form(role="form",name="update-topic")
+				.header 话题设置
+				.input-group
+					label 话题名称
+					input(value="#{topic.title}" name="topic-title")
+				.input-group
+					label 话题描述
+					textarea#topicBrief(name="topic-content") #{topic.brief}
+				.input-group
+					label 话题关闭时间
+					input#newEndTime(value="#{moment(topic.endAt).format('YYYY.MM.DD')}" name="topic-endAt")
+				button.m-btn#updateTopic 确认修改
+				button.m-btn#closeTopic 关闭话题
+		.shade#filePreview
+			.box
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/sweetalert.min.js")
+	script(src="/script/jquery.mousewheel.min.js")
+	script(src="/script/file/lib/crypto1/crypto/crypto.js")
+	script(src="/script/file/lib/crypto1/hmac/hmac.js")
+	script(src="/script/file/lib/crypto1/sha1/sha1.js")
+	script(src="/script/file/lib/base64.js")
+	script(src="/script/jquery.caret.js")
+	script(src="/script/jquery.atwho.min.js")
+	script(src="/script/topic.js")
+	script(src="/script/file-upload-topic.js")

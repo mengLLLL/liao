@@ -1,0 +1,71 @@
+
+.liao-container{
+    position: relative;
+    width:350px;
+    margin: 150px auto auto auto;
+    text-align: center;
+    border-radius: 7px;
+    border:1px solid rgba(0,0,0,0.3);
+    -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+}
+.liao-container .box div{
+    line-height: 60px;
+    background: white;
+}
+.liao-container  a{
+    color: #000;
+}
+.liao-container .header{
+    line-height:55px;
+    border-radius: 7px 7px 0 0;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    font-size:18px;
+}
+
+.liao-container .box .new-team{
+    border-bottom: 1px solid rgba(0,0,0,0.3);
+}
+.liao-container .box .join-team{
+    border-radius: 0 0 7px 7px;
+}
+.liao-container .form-box{
+    padding: 30px 40px;
+    background: white;
+    position: relative;
+}
+.liao-container .form-box input{
+    width:100%;
+    box-sizing: border-box;
+    padding-right: 10px;
+    padding-left: 10px;
+    border: 1px solid rgba(0,0,0,0.3);
+    -webkit-border-radius:4px;
+    -moz-border-radius:4px;
+    border-radius:4px;
+    line-height: 40px;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+.form-box .btn{
+    width:100%;
+    font-size: 18px;
+    border-radius: 4px;
+    border-color: rgba(0,0,0,0.1);
+    background: #29a9e8;
+    color: white;
+}
+
+button[disabled]{
+   cursor: not-allowed;
+    background: rgba(0,0,0,0.05) !important;
+    color: rgba(0,0,0,0.5)!important;
+}
+.liao-container .back{
+    position: absolute;
+    top:-35px;
+    left:15px;
+    color: white;
+}

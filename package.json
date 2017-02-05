@@ -1,0 +1,37 @@
+{
+  "name": "liao",
+  "version": "1.0.0",
+  "description": "liao",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.oschina.net/mengL/liao.git"
+  },
+  "author": "mengl",
+  "license": "ISC",
+  "dependencies": {
+    "async": "2.1.4",
+    "body-parser": "1.15.2",
+    "bootstrap": "3.3.7",
+    "connect": "2.30.2",
+    "connect-flash": "0.1.1",
+    "connect-mongo": "1.3.2",
+    "cookie-parser": "1.4.3",
+    "express": "4.14.0",
+    "express-session": "1.14.2",
+    "formidable": "1.0.17",
+    "jade": "1.11.0",
+    "jquery": "3.1.1",
+    "moment": "2.17.0",
+    "mongoose": "4.7.1",
+    "serve-static": "1.11.1",
+    "session-mongoose": "0.5.2",
+    "socket.io": "1.7.2"
+  },
+  "devDependencies": {
+    "lodash": "4.17.3"
+  }
+}

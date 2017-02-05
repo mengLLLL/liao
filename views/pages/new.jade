@@ -1,0 +1,11 @@
+extends ../layout-no-navbar
+block style
+	link(href="css/new-team.css", rel="stylesheet")
+block content
+	body
+		- console.log('user', session)
+		.liao-container
+			.header 选择团队
+			.box
+				.new-team
+					a(href="/new/team") 创建团队

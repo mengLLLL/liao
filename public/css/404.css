@@ -1,0 +1,10 @@
+p{
+    font-size:100px;
+    text-shadow: 6px 5px 13px rgba(0,0,0,0.3);
+}
+.container{
+    padding-top: 100px;
+}
+span{
+    font-size:20px;
+}

@@ -1,0 +1,128 @@
+extends ../layout
+block content
+	link(href="/css/statistics.css", rel="stylesheet")
+	body
+		.statistics-center
+			if teamOwner
+				.statistics-header
+					.header-tab(data-type='0').active 个人统计
+					.header-tab(data-type='1') 团队统计
+			.user-statistics(id='0').show
+				.title 话题统计
+				.statistics#topics
+					.sum
+						.number #{utopic0.length + utopic1.length + utopic2.length}
+						div 话题总数
+					.working
+						if utopic0.length > 0
+							.number #{utopic0.length}
+							div 正在进行的话题
+						else
+							.number 0
+							div 正在进行的话题
+					.finish
+						if utopic1.length > 0
+							.number #{utopic1.length}
+							div 已经结束的话题
+						else
+							.number 0
+							div 已经结束的话题
+					.overdue
+						if utopic2.length > 0
+							.number #{utopic2.length}
+							div 已经逾期的话题
+						else
+							.number 0
+							div 已经逾期的话题
+				.title 任务统计
+				.statistics#tasks
+					.sum
+						.number #{uHostTaskSum}
+						div 创建的任务
+					.sum
+						.number #{uPerformerTaskSum}
+						div 任务总数
+					.working
+						if uPerformerTask0.length > 0
+							.number #{uPerformerTask0.length}
+							div 正在进行的任务
+						else
+							.number 0
+							div 正在进行的任务
+					.finish
+						if uPerformerTask1.length > 0
+							.number #{uPerformerTask1.length}
+							div 已完成任务
+						else
+							.number 0
+							div 已完成任务
+					.overdue
+						if uPerformerTask2.length > 0
+							.number #{uPerformerTask2.length}
+							div 已逾期任务
+						else
+							.number 0
+							div 已逾期任务
+			if teamOwner
+				- console.log('teamOwner', teamOwner)
+				.team-statistics(id='1')
+					.title 话题统计
+					.statistics#teamTopics
+						.sum
+							.number #{topic0.length + topic1.length + topic2.length}
+							div 话题总数
+						.working
+							if topic0.length > 0
+								.number #{topic0.length}
+								div 正在进行的话题
+							else
+								.number 0
+								div 正在进行的话题
+						.finish
+							if topic1.length > 0
+								.number #{topic1.length}
+								div 已经结束的问题
+							else
+								.number 0
+								div 已经结束的问题
+						.overdue
+							if topic2.length > 0
+								.number #{topic2.length}
+								div 已经逾期的话题
+							else
+								.number 0
+								div 已经逾期的话题
+					.title 任务统计
+					.statistics#teamTasks
+						.sum
+							.number #{task0.length + task1.length + task2.length}
+							div 任务总数
+						.working
+							if task0.length > 0
+								.number #{task0.length}
+								div 正在进行的任务
+							else
+								.number 0
+								div 正在进行的任务
+						.finish
+							if task1.length > 0
+								.number #{task1.length}
+								div 已经完成的任务
+							else
+								.number 0
+								div 已经完成的任务
+						.overdue
+							if task2.length > 0
+								.number #{task2.length}
+								div 已逾期的任务
+							else
+								.number 0
+								div 已逾期的任务
+				.team-member-statistics(id='2')
+					.title 人员统计
+					.statistics#teamMemeber
+						.sum
+
+
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/statistics.js")

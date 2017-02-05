@@ -1,0 +1,24 @@
+extends ../layout-no-navbar
+block content
+	link(href="css/log.css", rel="stylesheet")
+	body
+		.logo-part
+			.logo
+			form.form-middle(role="form")
+				.form-group
+					label.fa.fa-user
+					input(type="text",name="phone",placeholder="请输入手机号码")
+				if loginName
+					div.error #{loginName}
+				.form-group
+					label.fa.fa-lock
+					input(type="password", name="password",placeholder="请输入密码")
+				if error
+					div.error #{error}
+				button.btn.login-btn#signup(data-teamId="#{teamId}" data-topicId="#{topicId}" data-tag='#{tag}') 注册&nbsp;
+					i.icon.fa.fa-sign-in
+
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/sweetalert.min.js")
+	script(src="/script/invested.js")
+

@@ -1,0 +1,168 @@
+extends ../layout
+block style
+	link(href="css/liao.css", rel="stylesheet")
+block content
+	body
+		input#userId(value="#{session.user.userId}" style="display:none")
+		.left.liao-left.topics-container.box
+			span.title 我的话题
+				a(href="#")#createTopic.fa.fa-plus
+			.topics
+				.working-topics
+					if topics.length > 0
+						each item in topics
+							if(item.condition == 0 || item.condition == 2)
+								div.topic-item.item(class="#{item.condition}" == 0 ? "working" : "overdue")
+									.topic-name
+										a(href='/topic?topicId=' + '#{item.topicId}') #{item.title}
+									.topic-brief #{item.brief}
+									.topic-msg
+										.topic-owner
+											.owner-avatar
+												img(src="#{item.owner.avatar}")
+
+										.topic-time
+											.topic-start-time
+												span #{item.owner.name} 创建于 #{moment(item.createAt).format('YYYY.MM.DD')}
+											.topic-rest-time
+												if (moment().isBefore(item.endAt))
+													- var classStrTime = ""
+													div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')}
+												else
+													- var classStrTime = "overdue"
+													.overdue 已逾期 #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
+									.enter
+										a(href="/topic?topicId=" + "#{item.topicId}") 进入话题
+									.hint
+										div.time(class=classStrTime) #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
+										if item.atUser
+											.at-part 有人@了你
+										each n_item in item.noticeWho
+											if session.user.userId == n_item.userId
+												- console.log('true')
+												.newMesg 话题有更新
+				.finished-topics
+					if topics.length > 0
+						each item in topics
+							if(item.condition == 1)
+								div.topic-item.item(class='finished')
+									.topic-name
+										a(href='/topic?topicId=' + '#{item.topicId}') #{item.title}
+									.topic-brief #{item.brief}
+									.topic-msg
+										.topic-owner
+											.owner-avatar
+												img(src="#{item.owner.avatar}")
+
+										.topic-time
+											.topic-start-time
+												span #{item.owner.name} 创建于 #{moment(item.createAt).format('YYYY.MM.DD')}
+											.topic-rest-time
+												div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')}
+									.enter
+										a(href="/topic?topicId=" + "#{item.topicId}") 进入话题
+									.hint
+										.over 已结束
+
+		.right.liao-right.tasks-container.box
+			span.title 我的任务
+				a(href="#")#createTask.fa.fa-plus
+			.tasks
+				.working-tasks
+					if tasks
+						each item in tasks
+							if(item.condition == 0 || item.condition == 2)
+								.task-item.item(class="#{item.condition}" == 0 ? "working" : "overdue")
+									.task-title
+										a(href="/task?taskId=" + "#{item.taskId}") #{item.title}
+									.task-brief #{item.brief}
+									.task-msg
+										.task-owner
+											.owner-avatar
+												img(src="#{item.owner.avatar}")
+										.task-time
+											.task-start-time
+												span #{item.owner.name} 创建于 #{moment(item.createAt).format("YYYY.MM.DD")}
+											.task-rest-time
+												if (moment().isBefore(item.endAt))
+													div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')},距今还有 #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
+												else
+													.overdue 已逾期 #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
+									.enter
+										a(href="/task?taskId=" + "#{item.taskId}") 查看详情
+									.hint
+										.task-percent #{item.statistics.percent} %
+										each n_item in item.newConditionNotice
+											if session.user.userId == n_item.userId
+												.newCondition 状态有更新
+										each n_task_item in item.newTaskNotice
+											if session.user.userId == n_task_item.userId
+												.newTask 你有新任务
+				.finished-tasks
+					if tasks
+						each item in tasks
+							if(item.condition == 1)
+								.task-item.item.finished
+									.task-title
+										a(href="/task?taskId=" + "#{item.taskId}") #{item.title}
+									.task-brief #{item.brief}
+									.task-msg
+										.task-owner
+											.owner-avatar
+												img(src="#{item.owner.avatar}")
+										.task-time
+											.task-start-time
+												span #{item.owner.name} 创建于 #{moment(item.createAt).format("YYYY.MM.DD")}
+											.task-rest-time
+												div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')}
+									.enter
+										a(href="/task?taskId=" + "#{item.taskId}") 查看详情
+									.hint
+										.over 已结束
+
+
+		.shade#shadeTopic
+			form(role="form", name="new-topic")
+				.header 创建话题
+				.input-group
+					label#topicTitle 话题名称
+					input(placeholder="请输入话题名称" name="topic-title")
+					span.errorMsg.validTitle 话题名称不能为空
+				.input-group
+					label#topicContent 话题目标
+					textarea(placeholder="要讨论的内容", name="topic-content")
+				.input-group
+					label#topicEndTime 话题截止日期
+					input#endTime
+				button.m-btn.btn-default#newTopic  创建话题
+		.shade#shadeJoinTopic
+			form(role="form", name="join-topic")
+				.header 搜索话题
+				.input-group
+					label#joinTopicName 话题名称
+					input(placeholder="请输入话题名称" name="joinName")
+					span.errorMsg#emptySearch 请输入话题名称
+				button.m-btn#joinNewTopic 搜索
+		.shade#shadeTask
+			form(role="form", name="new-task")
+				.header 创建任务
+				.input-group
+					label#taskTitle 任务名称
+					input(placeholder="请输入任务名称" name="task-title")
+					span.errorMsg.validTitle 名称不能为空
+				.input-group
+					label#taskContent 任务简述
+					textarea(placeholder="简要说明", name="task-content")
+				.input-group
+					label#taskEndTime 任务截止日期
+					input#taskFinishTime
+				button.m-btn#newTask  创建任务
+
+		.shade#shadeSearchResults
+			.results-container
+
+
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/sweetalert.min.js")
+	script(src="/script/liao.js")
+

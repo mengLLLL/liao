@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>at</title>
+    <link rel="stylesheet" href="./public/css/jquery.atwho.min.css">
+</head>
+<body>
+<textarea id="editable">
+
+</textarea>
+</body>
+<script src="node_modules/jquery/dist/jquery.min.js"></script>
+<script src="public/script/jquery.caret.js"></script>
+<script src="public/script/jquery.atwho.min.js"></script>
+<script>
+    $(function () {
+        $('#editable').atwho({
+            at: "@",
+            data: ["one", "two", "three"],
+        })
+    })
+</script>
+</html>

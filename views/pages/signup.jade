@@ -1,0 +1,22 @@
+extends ../layout-no-navbar
+block content
+	link(href="css/log.css", rel="stylesheet")
+	body
+		.logo-part
+			.logo
+			form.form-middle(role="form")
+				.form-group
+					label.fa.fa-user
+					input(type="text",name="phone",placeholder="请输入手机号码")
+				if loginName
+					div.error #{loginName}
+				.form-group
+					label.fa.fa-lock
+					input(type="password", name="password",placeholder="请输入密码，不少于6位")
+				button.btn.login-btn#signup 注 册&nbsp;
+					i.icon.fa.fa-sign-in
+				div.log-tips 已有账号？
+					a(href="/login") 去登录
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/sweetalert.min.js")
+	script(src="/script/signup.js")

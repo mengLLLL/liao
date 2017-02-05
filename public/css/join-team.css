@@ -1,0 +1,15 @@
+.header{
+    font-size: 22px;
+    padding:10px 0;
+    border-bottom:1px solid rgba(0,0,0,0.2);
+    margin-bottom: 10px;
+}
+input[name='teamName']{
+    padding:5px;
+    border-radius: 5px;
+    border:1px solid rgba(0,0,0,0.1);
+    margin-left: 10px;
+}
+.search-results{
+    margin-top: 10px;
+}

@@ -1,0 +1,15 @@
+extends ../layout-no-navbar
+block style
+	link(href="/css/new-team.css", rel="stylesheet")
+block content
+	body
+		.liao-container
+			.header 创建团队
+			form.form-box(method="post", action="/new/team", name="newteam", role="form")
+				a.back(href="/liao")
+					i.fa.fa-arrow-left
+				input#newTeam(placeholder="团队名称" name="newteam[name]")
+				button.btn#createBtn(type="submit" disabled=true) 创&nbsp;&nbsp;建
+
+	script(src="/socket.io/socket.io.js")
+	script(src="/script/new-team.js")
