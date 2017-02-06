@@ -52,7 +52,7 @@
     color: #000;
 }
 .left .task-statistics #taskFinish{
-    color: #00AD7C;
+    color: #3EC483;
 }
 .left .task-statistics #taskPercent{
     color: #55B3F3;
@@ -208,13 +208,13 @@
     margin-bottom: 5px;
 }
 .right .title{
-    font-size: 17px;
+    font-size: 14px;
     /*text-align: right;*/
     display: inline-block;
-    background: #ccc;
+    background: #222831;
     padding:5px 10px;
     border-radius: 20px 0 0 20px;
-    color: #3f4040;
+    color: #fafafa;
 }
 .right .down{
     border-top: 8px solid #ffffff;
@@ -347,4 +347,12 @@ input[type='checkbox']{
 #nodeTask .member-list{
     max-height: 200px;
     overflow-y: scroll;
+}
+.null-tips{
+    text-shadow: 0 2px 0 #fff, 0 -2px 0 #f8f6f2;
+    font-size:16px;
+    color: #64868e;
+    padding-top: 90px;
+    height:100%;
+    text-align: center;
 }

@@ -517,6 +517,7 @@ router.post('/chat', function (req, res) {
         if(err){return console.error(err)}
         var publicChat = {
           chatItemId: chatCollResults[0].chatItem.length + 1,
+
           user:{
             id: userId,
             name: userName,
@@ -563,17 +564,30 @@ router.post('/chat', function (req, res) {
           })
         }else{
           console.log('not atwho')
-
-          chatCollResults[0].chatItem.push({
-            chatItemId: chatCollResults[0].chatItem.length + 1,
-            user:{
-              id: userId,
-              name: userName,
-              avatar: req.session.user.avatar
-            },
-            chatContent: chatContent,
-            chat_type: req.body.chat_type
-          });
+          if(req.body.fileObj){
+            chatCollResults[0].chatItem.push({
+              chatItemId: chatCollResults[0].chatItem.length + 1,
+              fileName: req.body.fileObj.fileName,
+              user:{
+                id: userId,
+                name: userName,
+                avatar: req.session.user.avatar
+              },
+              chatContent: chatContent,
+              chat_type: req.body.chat_type
+            });
+          }else{
+            chatCollResults[0].chatItem.push({
+              chatItemId: chatCollResults[0].chatItem.length + 1,
+              user:{
+                id: userId,
+                name: userName,
+                avatar: req.session.user.avatar
+              },
+              chatContent: chatContent,
+              chat_type: req.body.chat_type
+            });
+          }
           chatCollResults[0].markModified('chatItem');
           chatCollResults[0].save(function (err, saveResult) {
             if(err){
@@ -907,6 +921,7 @@ router.post("/chat/delete/file", function (req, res) {
 router.post("/chat/collect", function(req, res){
   async.auto({
     getChatItemContent: function (callback) {
+      //把收藏这条消息的人push到这条消息的collect数组中
       chat.find({chatRecordId: req.body.chatRecordId}, function (err, chatResults) {
         if(err){
           callback(null)
@@ -943,6 +958,8 @@ router.post("/chat/collect", function(req, res){
       topic.find({topicId: req.body.topicId}, function (err, topicResults) {
         if(topicResults[0].owner.id == req.body.userId){
           topicResults[0].summarys.push({
+            fileName: req.body.fileName,
+            chatType: req.body.chatType,
             chatItemId:req.body.chatItemId,
             chatRecordId: req.body.chatRecordId,
             chatContent: results.getChatItemContent.chatContent,
@@ -966,7 +983,9 @@ router.post("/chat/collect", function(req, res){
               return console.error(err)
             }
             userResults[0].collections.push({
+              fileName: req.body.fileName,
               topicId: req.body.topicId,
+              chatType: req.body.chatType,
               chatItemId: req.body.chatItemId,
               chatRecordId: req.body.chatRecordId,
               chatContent:results.getChatItemContent.chatContent,
@@ -983,7 +1002,7 @@ router.post("/chat/collect", function(req, res){
                 return console.error(err)
               }
             })
-          })
+          });
           callback(null,{
             host:true,
             summary: results.getChatItemContent
@@ -996,9 +1015,11 @@ router.post("/chat/collect", function(req, res){
             }
             userResults[0].collections.push({
               topicId: req.body.topicId,
+              chatType: req.body.chatType,
               chatItemId: req.body.chatItemId,
               chatRecordId: req.body.chatRecordId,
               chatContent:results.getChatItemContent.chatContent,
+              fileName: req.body.fileName,
               user:{
                 id: results.getChatItemContent.user.id,
                 name: results.getChatItemContent.user.name,
@@ -1426,6 +1447,7 @@ router.post("/delete/topic", function (req, res) {
 });
 //获取聊天记录
 router.post("/mousewheel/chat", function (req, res) {
+  console.log('get history data')
   var chatItemId = req.body.chatItemId;
   var chatRecordId = req.body.chatRecordId;
   var chatCount = req.body.chatCount;
@@ -1501,6 +1523,7 @@ router.post("/mousewheel/chat", function (req, res) {
       }
     }
   }, function (err, finalResults) {
+    console.log('get hischat finalResults', finalResults)
     if(err){
       return res.send({
         success:false

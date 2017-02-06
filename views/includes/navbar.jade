@@ -14,6 +14,7 @@
 	ul.nav-right
 		li
 			div.avatar#avatar(href="#")
+				- console.log('session avatar', session.user.avatar)
 				img(src='#{session.user.avatar}')
 			ul.user-setting.arrow-top#userSetting
 				li

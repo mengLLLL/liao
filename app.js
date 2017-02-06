@@ -2,7 +2,7 @@
  * Created by MengL on 2016/12/1.
  */
 var express = require('express');
-var port = 8080;
+var port = 9000;
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -128,7 +128,7 @@ topicIO.on('connection', function(socket){
 
   var url = socket.request.headers.referer;
   var split_arr = url.split('=');
-  //这里url的形式为http://localhost:8080/topic?topicId=0，所以这样简单的取出来topicId
+  //这里url的形式为http://localhost:9000/topic?topicId=0，所以这样简单的取出来topicId
   var topicId = split_arr[1];
 
   if(!onlineUsers[topicId]){

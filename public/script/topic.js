@@ -37,7 +37,7 @@ socket.on('public', function(data){
           "<div class='chatItem impressed'>" + data.chatObj.chatContent +
           "<span class='fa fa-ellipsis-h chat-operate'>" +
           "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
-          "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
+          "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
           "</span>"+
           "</div>" +
           "</div>")
@@ -52,7 +52,7 @@ socket.on('public', function(data){
           "<div class='chatItem'>" + data.chatObj.chatContent +
           "<span class='fa fa-ellipsis-h chat-operate'>" +
           "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
-          "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
+          "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
           "</span>"+
           "</div>" +
           "</div>")
@@ -69,7 +69,7 @@ socket.on('public', function(data){
         "<div class='chatItem'>" + data.chatObj.chatContent +
         "<span class='fa fa-ellipsis-h chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
-        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
+        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
         "</div>" +
         "</div>")
@@ -89,7 +89,7 @@ socket.on('public', function(data){
         "<div class='chatItem'>" +"<img class='preview-img' src='"+data.chatObj.chatContent+"'>"+
         "<span class='fa fa-ellipsis-h chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
-        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
+        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(2,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
         "</div>" +
         "</div>")
@@ -109,10 +109,10 @@ socket.on('public', function(data){
         "<span class='name'>"+data.user.userName+"</span>" +
         "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
         "</div>" +
-        "<div class='chatItem'>" +"<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName+",点击下载</a>"+
+        "<div class='chatItem'>" +"<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName+"</a>"+
         "<span class='fa fa-ellipsis-h chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
-        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
+        "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(3,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
         "</div>" +
         "</div>")
@@ -260,13 +260,19 @@ function chatDisAgree(chatItemId, chatRecordId, userId){
  * @param chatRecordId
  * @param userId
  */
-function chatCollect(chatItemId,chatRecordId,userId){
+function chatCollect(chatType,chatItemId,chatRecordId,userId){
+  var filename = "";
+  if(chatType == 2 || chatType == 3){
+    filename=$("#collect-"+chatRecordId+"-"+chatItemId).parent().siblings('.file-name').html();
+  }
   var topicId = $("#Title").data('id');
   var obj = {
     chatItemId:chatItemId,
     chatRecordId: chatRecordId,
+    chatType: chatType,
     userId: userId,
-    topicId: topicId
+    topicId: topicId,
+    fileName: filename
   };
   $.ajax({
     type:"POST",
@@ -276,28 +282,84 @@ function chatCollect(chatItemId,chatRecordId,userId){
     success: function (data) {
       console.log('data',data)
       $("#collect-"+chatRecordId+"-"+chatItemId).removeClass('fa-star-o').addClass('fa-star');
-      $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatDisCollect("+chatItemId+","+chatRecordId+","+userId+")");
+      $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatDisCollect("+chatType+","+chatItemId+","+chatRecordId+","+userId+")");
       if(data.success){
         if(data.summary.host){
-          $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
-            "<div class='summary-content'>" + data.summary.summary.chatContent +
-            "</div>" +
-            "<div class='summary-owner'>" +
-            "<span class='ownerName'>"+data.summary.summary.user.name+
-            "发表于</span>" +
-            "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
-            "</div>" +
-            "</div>")
+          //话题主的收藏展现
+          if(data.summary.summary.chat_type == 1){
+            $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" + data.summary.summary.chatContent +
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
+          if(data.summary.summary.chat_type == 2){
+            $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" +
+              "<img src='"+data.summary.summary.chatContent+"'>" +
+              "<span>" + data.summary.summary.fileName+ "</span>"+
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
+          if(data.summary.summary.chat_type == 3){
+            $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" +
+              "<a href='"+data.summary.summary.chatContent+"'>" + data.summary.summary.fileName + "</a>" +
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
+
         }else{
-          $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
-            "<div class='summary-content'>" + data.summary.summary.chatContent +
-            "</div>" +
-            "<div class='summary-owner'>" +
-            "<span class='ownerName'>"+data.summary.summary.user.name+
-            "发表于</span>" +
-            "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
-            "</div>" +
-            "</div>")
+          if(data.summary.summary.chat_type == 1){
+            $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" + data.summary.summary.chatContent +
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
+          if(data.summary.summary.chat_type == 2){
+            $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" +
+              "<img src='"+data.summary.summary.chatContent+"'>" +
+              "<span>" + data.summary.summary.fileName+ "</span>"+
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
+          if(data.summary.summary.chat_type == 3){
+            $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+              "<div class='summary-content'>" +
+              "<a href='"+data.summary.summary.chatContent+"'>" + data.summary.summary.fileName + "</a>" +
+              "</div>" +
+              "<div class='summary-owner'>" +
+              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "发表于</span>" +
+              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+              "</div>" +
+              "</div>")
+          }
         }
       }
     }
@@ -310,7 +372,7 @@ function chatCollect(chatItemId,chatRecordId,userId){
  * @param chatRecordId
  * @param userId
  */
-function chatDisCollect(chatItemId, chatRecordId, userId){
+function chatDisCollect(chatType,chatItemId, chatRecordId, userId){
   var obj = {
     chatItemId: chatItemId,
     chatRecordId: chatRecordId,
@@ -331,11 +393,11 @@ function chatDisCollect(chatItemId, chatRecordId, userId){
           //话题主
           $("#upSummary div[data-chatid =" + chatItemId+"]").remove();
           $("#collect-"+chatRecordId+"-"+chatItemId).removeClass('fa-star').addClass('fa-star-o');
-          $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatCollect("+chatItemId+","+chatRecordId+","+userId+")");
+          $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatCollect("+chatType+","+chatItemId+","+chatRecordId+","+userId+")");
         }else{
           $("#mySummary div[data-chatid =" + chatItemId+"]").remove();
           $("#collect-"+chatRecordId+"-"+chatItemId).removeClass('fa-star').addClass('fa-star-o');
-          $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatCollect("+chatItemId+","+chatRecordId+","+userId+")");
+          $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatCollect("+chatType+","+chatItemId+","+chatRecordId+","+userId+")");
         }
 
       }
@@ -425,7 +487,7 @@ $(document).ready(function() {
   //$('#investMember').click(function (e) {
   //  e.preventDefault();
   //  var teamId = $("#investMember").data('teamid');
-  //  $('.invest-code').append("<input value='http://localhost:8080/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>")
+  //  $('.invest-code').append("<input value='http://localhost:3000/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>")
   //
   //});
 
@@ -453,7 +515,7 @@ $(document).ready(function() {
   });
 
   //聊天里面的预览图片
-  $('.chat-item img').click(function (e) {
+  $('.chat-item .preview-img').click(function (e) {
     $("#filePreview").children('.box').html("");
     e.preventDefault();
     var src = $(this).attr("src");
@@ -542,8 +604,8 @@ $(document).ready(function() {
 
   $('textarea').atwho({
     at: "@",
-    data: "http://www.zhengxinsen.com/members/topic?topicId=" + $("#Title").data('id')
-    //data: "http://localhost:8080/members/topic?topicId=" + $("#Title").data('id')
+    //data: "http://pai.ihangwei.com/members/topic?topicId=" + $("#Title").data('id')
+    data: "http://localhost:9000/members/topic?topicId=" + $("#Title").data('id')
   });
   $("textarea").on("keydown.atwho", function (e, flag, query) {
     e.stopPropagation()
@@ -552,7 +614,7 @@ $(document).ready(function() {
     if(e.deltaY < 0){
       $("#tipChat").hide();
     }
-    if($('#chatPart').scrollTop()==0){
+    if(e.deltaY > 0 && $('#chatPart').scrollTop()==0){
       if($("#hasNoRecord").is(":visible") == false){
         $("#tipChat").show();
       }
@@ -560,6 +622,7 @@ $(document).ready(function() {
   });
   //加载更多历史聊天记录
   $("#tipChat").click(function (e) {
+    console.log('click')
     $("#tipChat").removeAttr('onclick');
     var chatCount = $("#chatPart").children().length;
     var chatItemId = $("#chatPart").children().first().data('chatitemid');
@@ -594,11 +657,11 @@ $(document).ready(function() {
                       "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
                     "</div>" +
                   "<div class='chatItem'>" +obj.chatContent+
-                  "<span class='fa fa-ellipsis-h chat-operate'>" +
+                  "</div>"+
+                  "<span class='chat-operate'>" +
                   "<i class='fa fa-thumbs-o-up'  onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "<i class='fa fa-star-o'  onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "</span>"+
-                  "</div>"+
                   "</div>")
               }
               if(obj.chat_type == 2){
@@ -611,11 +674,11 @@ $(document).ready(function() {
                   "</div>" +
                   "<div class='chatItem'>" +
                   "<img class='preview-img' src='"+ obj.chatContent +"'>"+
-                  "<span class='fa fa-ellipsis-h chat-operate'>" +
+                  "</div>"+
+                  "<span class='chat-operate'>" +
                   "<i class='fa fa-thumbs-o-up'  onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "<i class='fa fa-star-o'  onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "</span>"+
-                  "</div>"+
                   "</div>")
               }
               if(obj.chat_type == 3){
@@ -628,11 +691,11 @@ $(document).ready(function() {
                   "</div>" +
                   "<div class='chatItem'>" +
                   "<a href='" +obj.chatContent +"'>点击下载</a>"+
-                  "<span class='fa fa-ellipsis-h chat-operate'>" +
+                  "</div>"+
+                  "<span class='chat-operate'>" +
                   "<i class='fa fa-thumbs-o-up' onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "<i class='fa fa-star-o' onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
                   "</span>"+
-                  "</div>"+
                   "</div>")
               }
             })
@@ -897,7 +960,7 @@ $(document).ready(function() {
             })
             if(unexistMembers.length==0){
               return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>本团队中的成员都在此话题中，可以通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://www.zhengxinsen.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+                "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
             }
             unexistMembers.forEach((function (obj, i, arr) {
               $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
@@ -910,7 +973,7 @@ $(document).ready(function() {
                 "</div>")
             }));
             $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://www.zhengxinsen.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
 
           }else{
             //话题成员点开的成员列表
@@ -930,7 +993,7 @@ $(document).ready(function() {
             })
             if(unexistMembers.length==0){
               return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>本团队中的成员都在此话题中，可以通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://www.zhengxinsen.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+                "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
             }
 
             unexistMembers.forEach(function (obj, i, arr) {
@@ -944,7 +1007,7 @@ $(document).ready(function() {
                 "</div>")
             })
             $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://www.zhengxinsen.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
 
           }
 
@@ -1049,7 +1112,7 @@ $(document).ready(function() {
         //console.log(data)
         if(data.success){
           //swal("话题已成功关闭")
-          window.location.href="http://www.zhengxinsen.com/liao";
+          window.location.href="http://www.pai.ihangwei.com/liao";
 
         }else{
           swal("话题关闭异常，请稍后再试")
@@ -1113,7 +1176,7 @@ $(document).ready(function() {
                   "<span class='name'> " + obj.user.name +"</span>" +
                   "<span class='time'>"+ moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') +"</span>" +
                   "</div>" +
-                  "<div class='chatItem'><a href='" + obj.chatContent+"'>点击下载</a> </div>" +
+                  "<div class='chatItem'><a href='" + obj.chatContent+"'>"+obj.fileName+"</a> </div>" +
                   "</div>")
               }
             });
@@ -1126,23 +1189,22 @@ $(document).ready(function() {
             });
             //显示更多聊天提示
             $('#summaryChat').bind('mousewheel', function (e) {
-              if(e.deltaY < 0){
-                $("#summaryMoreChat").hide();
-
-              }
-              if(e.deltaY > 0){
-                $('#summaryMoreChatDown').hide()
-              }
               if($('.summary-chat').scrollTop()==0){
                 $("#summaryMoreChat").show();
                 $("#summaryMoreChat").attr('onclick');
               }
               //TODO 这里的这个数字是会变的（因为样式的缘故）
-              if($('.summary-chat').scrollTop() - $("#summaryChat")[0].scrollHeight + $(".summary-chat").height()<30){
+              if($("#summaryChat")[0].scrollHeight - $('.summary-chat').scrollTop() == $(".summary-chat").height()-15){
                 console.log('xiangdengle')
                 $('#summaryMoreChatDown').show()
                 $("#summaryMoreChatDown").attr('onclick');
+              }
 
+              if(e.deltaY < 0){
+                $("#summaryMoreChat").hide();
+              }
+              if(e.deltaY > 0){
+                $('#summaryMoreChatDown').hide()
               }
             });
 
@@ -1199,7 +1261,7 @@ $(document).ready(function() {
                             "<span class='name'> " + obj.user.name +"</span>" +
                             "<span class='time'>"+ moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') +"</span>" +
                             "</div>" +
-                            "<div class='chatItem'><a href='" + obj.chatContent+"'>点击下载</a> </div>" +
+                            "<div class='chatItem'><a href='" + obj.chatContent+"'>"+obj.fileName+"</a> </div>" +
                             "</div>")
                         }
                       })
@@ -1264,7 +1326,7 @@ $(document).ready(function() {
                             "<span class='name'> " + obj.user.name +"</span>" +
                             "<span class='time'>"+ moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') +"</span>" +
                             "</div>" +
-                            "<div class='chatItem'><a href='" + obj.chatContent+"'>点击下载</a> </div>" +
+                            "<div class='chatItem'><a href='" + obj.chatContent+"'>"+obj.fileName+"</a> </div>" +
                             "</div>")
                         }
                       })

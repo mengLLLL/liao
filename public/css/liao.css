@@ -20,7 +20,7 @@ html, body{
 .title{
     display: block;
     font-size: 28px;
-    margin: 15px auto;
+    margin: 25px auto;
 }
 .box .item{
     background: #fff;
@@ -150,12 +150,12 @@ html, body{
 }
 /*topic part*/
 .topic-name{
-    font-size: 30px;
+    font-size: 23px;
     min-width: 40px;
     text-align: left;
 }
 .task-title{
-    font-size: 30px;
+    font-size: 23px;
     min-width: 40px;
     text-align: left;
 }
@@ -213,13 +213,20 @@ html, body{
     color: rgba(0,0,0,0.7);
 
 }
+.hint-top-35{
+    top:35px;
+}
+.hint-top-10{
+    top:-10px;
+}
 .hint{
     position: absolute;
-    left: 90%;
-    top:-10px;
+    left: 93%;
     width: 100px;
     text-align: left;
+    font-size:13px;
 }
+
 .hint div{
     display: inline-block;
     margin-bottom: 10px;
@@ -293,6 +300,10 @@ html, body{
     line-height: 50px;
     text-align: center;
     font-weight: 600;
+    display: inline-block;
+    position: absolute;
+    top: -24px;
+    right: -25px;
     text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
     background: #fff;
     color: #2c9e4b;
@@ -304,21 +315,25 @@ html, body{
     border-radius:50%;
 }
 .newCondition{
-    background: #F7F48B;
+    background: white;
     border-radius: 15px;
     text-align: center;
     line-height: 30px;
+    color: #ff799e;
     padding: 0 10px;
+    text-shadow:1px 1px 1px rgba(0,0,0,0.2);
     -webkit-box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
 }
 .newTask{
-    background: #daa393;
+    background: white;
     border-radius: 15px;
     text-align: center;
     line-height: 30px;
     padding: 0 10px;
+    color: #fd5959;
+    text-shadow:1px 1px 1px rgba(0,0,0,0.2);
     -webkit-box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     -moz-box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
     box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
@@ -327,4 +342,21 @@ html, body{
     max-height: 200px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+.addNew{
+    position: relative;
+    left:205px;
+    display: inline-block;
+    font-size: 16px;
+    background: #fff;
+    border:1px solid rgba(59,194,29,.7);
+    padding:5px 13px;
+    -webkit-border-radius:15px;
+    -moz-border-radius:15px;
+    border-radius:15px;
+    color:rgba(59,194,29,.7) !important;
+}
+.addNew:hover{
+    color: rgba(59,194,29,.7) !important;
+    background: rgba(59,194,29,.07);
 }

@@ -37,6 +37,11 @@ var TopicSchema = new mongoose.Schema({
   },
   chatRecordId: Number,
   summarys:[{
+    chatType: Number,
+    fileName:{
+      type:String,
+      default:""
+    },
     chatItemId:Number,
     chatRecordId: Number,
     chatContent: String,

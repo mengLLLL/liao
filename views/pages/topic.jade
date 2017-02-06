@@ -7,17 +7,34 @@ block content
 			- console.log('host',host)
 			if (host=='true')
 				- console.log('if')
-				.up
+				.up.height90
 					#upSummary
 						.title 摘要
 						if summarys
 							.summary-box
 								each item in summarys
-									.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
-										.summary-content #{item.chatContent}
-										.summary-owner
-											span.ownerName #{item.user.name} 发表于
-											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									- console.log('items',item)
+									if(item.chatType == 1)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content #{item.chatContent}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType==2)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												img(src="#{item.chatContent}")
+												span #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 3)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												a(href="#{item.chatContent}") #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
 			else
 				- console.log('else')
 				.up
@@ -26,22 +43,55 @@ block content
 						if summarys
 							.summary-box
 								each item in summarys
-									.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
-										.summary-content #{item.chatContent}
-										.summary-owner
-											span.ownerName #{item.user.name} 发表于
-											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									- console.log('items',item)
+									if(item.chatType == 1)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content #{item.chatContent}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 2)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												img(src="#{item.chatContent}")
+												span #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 3)
+										.summary.host-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												a(href="#{item.chatContent}") #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
 				.down
 					#mySummary
 						.title 我的摘要
 						if collections
 							.summary-box
 								each item in collections
-									.summary.my-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
-										.summary-content #{item.chatContent}
-										.summary-owner
-											span.ownerName #{item.user.name} 发表于
-											span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 1)
+										.summary.my-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content #{item.chatContent}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 2)
+										.summary.my-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												img(src="#{item.chatContent}")
+												span #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
+									if(item.chatType == 3)
+										.summary.my-summary(data-chatrecordid="#{item.chatRecordId}" data-chatid="#{item.chatItemId}")
+											.summary-content
+												a(href="#{item.chatContent}") #{item.fileName}
+											.summary-owner
+												span.ownerName #{item.user.name} 发表于
+												span.summary-publish-time #{moment(item.createAt).format('YYYY.MM.DD')}
 		.middle(data-userid=session.user.userId data-ownerid = topic.owner.id)
 			if topic.atUser
 				.at-msg
@@ -58,7 +108,9 @@ block content
 						span.form-now 距今还有
 							label #{moment(topic.endAt,'YYYYMMDD').fromNow(true)}
 					else
-						.overdue 已逾期 #{moment(topic.endAt,'YYYYMMDD').fromNow(true)}
+						span.end-time 截止时间
+							label #{moment(topic.endAt).format('YYYY.MM.DD')}
+						span.overdue 已逾期 #{moment(topic.endAt,'YYYYMMDD').fromNow(true)}
 				.setting
 					if (session.user.userId == topic.owner.id)
 						- var hostOrNot = true;
@@ -67,66 +119,68 @@ block content
 					else
 						-var hostOrNot = false;
 							i.fa.fa-users.member-setting#membersSetting(data-hostornot="#{hostOrNot}")
-			div#tipChat 点击加载更多
-			div#hasNoRecord 没有更多的聊天记录了
-			.center-box#chatPart
-				if(chats)
-					each item in chats
-						- var collect_tag = false;
-						- var agree_tag = false;
-						each c in item.collect
-							if session.user.userId == c.user.id
-								- console.log('haha')
-								- collect_tag = true
-						each a in item.agree
-							if session.user.userId == a.user.id
-								- agree_tag = true
-						div.chat-item(data-chatitemid="#{item.chatItemId}" data-chatrecordid='#{topic.chatRecordId}')
-							.userMsg
-								a(href='#').avatar
-									img(src="#{item.user.avatar}")
-								span.name #{item.user.name}
-								span.time #{moment(item.createAt).format('YYYY.MM.DD HH:MM:SS')}
-							if(item.chat_type == 1)
-								if item.atwho.userId
-									- console.log('item.atwho.userId', item.atwho.userId==session.user.userId)
-									.chatItem(class="#{item.atwho.userId==session.user.userId?'impressed':'normal'}") #{item.chatContent}
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star":"fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true?"chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")":"chatCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")")
-								else
-									- console.log('collect_tag chat type ', collect_tag)
-									- console.log('chat type = 1 else')
-									.chatItem(class='normal') #{item.chatContent}
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true?"chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")":"chatCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")")
-							if(item.chat_type == 2)
-								if item.atwho.userId
-									.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed':'normal'}")
-										img.preview-img(src="#{item.chatContent}")
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
-								else
-									.chatItem(class="normal")
-										img.preview-img(src="#{item.chatContent}")
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
-							if(item.chat_type == 3)
-								if item.atwho.userId
-									.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed':'normal'}")
-										a(href="#{item.chatContent}") 点击下载
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
-								else
-									.chatItem(class="normal")
-										a(href="#{item.chatContent}") 点击下载
-										span.fa.fa-ellipsis-h.chat-operate
-											i.fa(class= agree_tag == true?"fa-thumbs-up":"fa-thumbs-o-up" id="agree-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= agree_tag == true?"":"chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ,"+session.user.userId+")")
-											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-"+"#{topic.chatRecordId}"+"-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(#{item.chatItemId},#{topic.chatRecordId} ,"+session.user.userId+")" : "chatCollect(#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+
+			.center-box
+				div#tipChat 点击加载更多
+				div#hasNoRecord 没有更多的聊天记录了
+				div#chatPart
+					if(chats)
+						each item in chats
+							- var collect_tag = false;
+							- var agree_tag = false;
+							each c in item.collect
+								if session.user.userId == c.user.id
+									- console.log('haha')
+									- collect_tag = true
+							each a in item.agree
+								if session.user.userId == a.user.id
+									- agree_tag = true
+							div.chat-item(data-chatitemid="#{item.chatItemId}" data-chatrecordid='#{topic.chatRecordId}')
+								.userMsg
+									a(href='#').avatar
+										img(src="#{item.user.avatar}")
+									span.name #{item.user.name}
+									span.time #{moment(item.createAt).format('YYYY.MM.DD HH:MM:SS')}
+								if(item.chat_type == 1)
+									if item.atwho.userId
+										- console.log('item.atwho.userId', item.atwho.userId==session.user.userId)
+										.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed' : 'normal'}") #{item.chatContent}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(1,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(1,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+									else
+										.chatItem(class='normal') #{item.chatContent}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(1,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(1,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+								if(item.chat_type == 2)
+									if item.atwho.userId
+										.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed' : 'normal'}")
+											img.preview-img(src="#{item.chatContent}")
+											span.file-name #{item.fileName}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+									else
+										.chatItem(class="normal")
+											img.preview-img(src="#{item.chatContent}")
+											span.file-name #{item.fileName}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+								if(item.chat_type == 3)
+									if item.atwho.userId
+										.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed' : 'normal'}")
+											a.file-name(href="#{item.chatContent}") #{item.fileName}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
+									else
+										.chatItem(class="normal")
+											a.file-name(href="#{item.chatContent}") #{item.fileName}
+										span.chat-operate
+											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
+											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
 			.chat-box
 				.input-box
 					textarea(id="chatContent")
@@ -157,7 +211,7 @@ block content
 										i.fa.fa-trash.deleteFile
 								else
 									.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername="#{item.uploader.name}")
-										a(href="#{item.source}") #{item.fileName} 下载
+										a(href="#{item.source}") #{item.fileName}
 										i.fa.fa-star-o.collectFile
 										i.fa.fa-trash.deleteFile
 			.down#topicTask
@@ -172,7 +226,7 @@ block content
 									a(href="/task?taskId=" + "#{item.taskId}") #{item.title}
 								.sub-task-owner 由#{item.owner.name}创建
 				else
-					div 暂无任务
+					div.null-tips 暂无任务
 		.shade#memberSetting(data-teamId=session.team.teamId)
 			.member-shade
 				.shade-header 成员列表

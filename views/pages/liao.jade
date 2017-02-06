@@ -6,7 +6,7 @@ block content
 		input#userId(value="#{session.user.userId}" style="display:none")
 		.left.liao-left.topics-container.box
 			span.title 我的话题
-				a(href="#")#createTopic.fa.fa-plus
+				a(href="#").addNew#createTopic 添加
 			.topics
 				.working-topics
 					if topics.length > 0
@@ -20,7 +20,6 @@ block content
 										.topic-owner
 											.owner-avatar
 												img(src="#{item.owner.avatar}")
-
 										.topic-time
 											.topic-start-time
 												span #{item.owner.name} 创建于 #{moment(item.createAt).format('YYYY.MM.DD')}
@@ -33,7 +32,7 @@ block content
 													.overdue 已逾期 #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
 									.enter
 										a(href="/topic?topicId=" + "#{item.topicId}") 进入话题
-									.hint
+									.hint.hint-top-10
 										div.time(class=classStrTime) #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
 										if item.atUser
 											.at-part 有人@了你
@@ -61,12 +60,12 @@ block content
 												div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')}
 									.enter
 										a(href="/topic?topicId=" + "#{item.topicId}") 进入话题
-									.hint
+									.hint.hint-top-10
 										.over 已结束
 
 		.right.liao-right.tasks-container.box
 			span.title 我的任务
-				a(href="#")#createTask.fa.fa-plus
+				a(href="#")#createTask.addNew 添加
 			.tasks
 				.working-tasks
 					if tasks
@@ -90,8 +89,8 @@ block content
 													.overdue 已逾期 #{moment(item.endAt, 'YYYYMMDD').fromNow(true)}
 									.enter
 										a(href="/task?taskId=" + "#{item.taskId}") 查看详情
-									.hint
-										.task-percent #{item.statistics.percent} %
+									.task-percent #{item.statistics.percent} %
+									.hint.hint-top-35
 										each n_item in item.newConditionNotice
 											if session.user.userId == n_item.userId
 												.newCondition 状态有更新
@@ -117,7 +116,7 @@ block content
 												div.end-time 截止于 #{moment(item.endAt).format('YYYY.MM.DD')}
 									.enter
 										a(href="/task?taskId=" + "#{item.taskId}") 查看详情
-									.hint
+									.hint.hint-top-10
 										.over 已结束
 
 

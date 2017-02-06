@@ -5,6 +5,11 @@ var mongoose = require('mongoose');
 var UserSchema = new mongoose.Schema({
   name:String,
   password:String,
+  userId:Number,
+  avatar:{
+    default:"http://donew.oss-cn-hangzhou.aliyuncs.com/liao/topic/1/2017-01-03/IMG_5426.JPG",
+    type:String
+  },
   nickName:String,
   realName: {
     tag: false,
@@ -32,11 +37,6 @@ var UserSchema = new mongoose.Schema({
   wechat: {
     type: String,
     default: ""
-  },
-  userId:Number,
-  avatar:{
-    default:"http://donew.oss-cn-hangzhou.aliyuncs.com/liao/topic/1/2017-01-03/IMG_5426.JPG",
-    type:String
   },
   teams:[{
     teamId: Number,
@@ -108,6 +108,11 @@ var UserSchema = new mongoose.Schema({
   collections:[{
     topicId: Number,
     chatItemId: Number,
+    chatType: Number,
+    fileName:{
+      type:String,
+      default:""
+    },
     chatRecordId: Number,
     chatContent: String,
     user:{

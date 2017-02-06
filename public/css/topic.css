@@ -33,6 +33,9 @@
     height:45%;
     padding:10px 5px 0 0;
 }
+.topic .left .height90{
+    height:90% !important;
+}
 .topic .left .summary{
     text-align: left;
     font-size: 14px;
@@ -53,7 +56,7 @@
     display: none;
     min-width: 350px;
     max-width: 450px;
-    max-height: 400px;
+    height: 400px;
     overflow-y: scroll;
     overflow-x: scroll;
     z-index: 999;
@@ -65,6 +68,9 @@
 }
 .summary-chat .important{
     color: #F47C7C;
+}
+.summary-content img{
+    height:80px;
 }
 .topic .left .down{
     border-top: 8px solid #fff;
@@ -98,15 +104,18 @@
     margin-bottom: 5px;
     padding: 0 5px 0 5px;
     text-align: left;
+    cursor: pointer;
+    border-bottom:1px dashed rgba(0,0,0,0.2);
+    margin-bottom: 15px;
 }
 .topic .left .title{
-    font-size: 17px;
+    font-size: 14px;
     text-align: left;
     display: inline-block;
-    background: #ccc;
+    background: #222831;
     padding:5px 10px;
     border-radius: 0 20px 20px 0;
-    color: #3f4040;
+    color: #fafafa;
 }
 .topic .left #upSummary{
     height:100%;
@@ -116,21 +125,21 @@
 }
 .topic .left .summary-box{
     overflow: scroll;
-    height:100%;
     padding:10px 20px;
+    height:90%;
 }
 
 .topic .right{
     text-align: right;
 }
 .topic .right .title{
-    font-size: 17px;
+    font-size: 14px;
     /*text-align: right;*/
     display: inline-block;
-    background: #ccc;
+    background: #222831;
     padding:5px 10px;
     border-radius: 20px 0 0 20px;
-    color: #3f4040;
+    color: #fafafa !important;
 }
 .topic .right{
     width:20%;
@@ -197,17 +206,19 @@
 }
 .topic .middle .topicMsg-part .topic-title{
     font-size: 20px;
-    padding: 20px;
+    padding: 10px 15px;
     margin-right: 20px;
+    width:90%;
 }
 /*这里以后如果简介很长修改样式*/
 .topic .middle .brief{
-   font-size: 14px;
+    font-size: 14px;
     display: inline-block;
-    max-width:calc(100% - 100px);
+    max-width:calc(100% - 40px);
+    margin-left: 5px;
 }
 .topic .middle .rest-time{
-    margin-left: 20px;
+    margin-left: 15px;
 }
 .topic .middle .rest-time span{
     display: inline-block;
@@ -219,7 +230,7 @@
     display: none;
 }
 .topic .middle .chat-box{
-    padding:15px;
+    padding:15px 15px 0px 15px;
     /*width:inherit;*/
     /*position: fixed;*/
     /*bottom:15px;*/
@@ -410,13 +421,14 @@
     background-color: #ffc0ab;
 }
 .center-box{
-    padding:15px;
+    padding:0 15px;
     /*height:60%;*/
     height:-webkit-calc(100% - 260px);
     height:-moz-calc(100% - 260px);
     height:calc(100% - 260px);
     overflow-y: scroll;
     overflow-x: hidden;
+    position: relative;
 }
 .userMsg{
     position: relative;
@@ -444,17 +456,19 @@
     color: rgba(0, 0, 0, 0.6);
 }
 .chatItem{
-    margin: 10px 0 0 45px ;
+    margin: 0 0 0 45px ;
     position: relative;
     text-align: left;
     line-height:20px;
-    padding:5px;
     -webkit-border-radius:5px;
     -moz-border-radius:5px;
     border-radius:5px;
+    display: inline-block;
+    width:calc(100% - 120px);
 }
 .center-box .chat-operate{
-    display: none;
+    display: inline-block;
+    width: 50px;
     position: relative;
     left:5px;
     bottom:-3px;
@@ -472,30 +486,33 @@
     cursor: pointer;
     color: #43496E;
 }
-.center-box .chat-operate i{
-    display: none;
-}
+
 
 #tipChat{
     background: #F38181;
     line-height: 20px;
     display: none;
     position: absolute;
-    top:100px;
+    top:3px;
+    z-index:99;
     left:50%;
     margin-left: -42px;
+    cursor: pointer;
     padding:5px;
     color: #F9FCFD;
+    font-size: 12px;
     -webkit-border-radius:5px;
     -moz-border-radius:5px;
     border-radius:5px;
 }
 #summaryMoreChat{
     background: #F38181;
-    line-height: 20px;
+    line-height: 12px;
+    font-size:12px;
+    top:10px;
     display: none;
     padding:5px;
-    left:200px;
+    left:190px;
     position: absolute;
     color: #F9FCFD;
     -webkit-border-radius:5px;
@@ -505,7 +522,7 @@
 }
 #summaryMoreChatDown{
     background: #F38181;
-    line-height: 20px;
+    line-height: 12px;
     display: none;
     padding:5px;
     position: fixed;
@@ -514,16 +531,23 @@
     -moz-border-radius:5px;
     border-radius:5px;
     z-index:9999;
-    top:443px;
+    top:452px;
     left:250px;
+    font-size:12px;
 }
 #hasNoRecord{
-    background: #ffc0ab;
-    line-height: 18px;
+    background: #F38181;
+    line-height: 20px;
     display: none;
     position: absolute;
-    top:100px;
-    left:55%;
+    top:3px;
+    left:50%;
+    margin-left: -42px;
+    padding:5px;
+    color: #F9FCFD;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
 }
 
 
@@ -533,20 +557,17 @@
 }
 
 .overdue{
-    background: #f47c7c;
+    color: #f47c7c !important;
 }
-
-
 
 #addNewTask{
     font-size: 16px;
     display: inline-block;
     margin-left: 5px;
     cursor: pointer;
-    color: #539DDB;
 }
 #addNewTask:hover{
-    color: #084A83;
+    color: #3EC483;
 }
 .at-msg{
     position: absolute;
@@ -578,13 +599,15 @@
 }
 
 .summary .summary-owner{
-    font-size: 13px;
-    color: rgba(0, 0, 0, 0.6);
+    font-size: 12px;
     text-align: right;
+    color: #718CA1;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
-.topic .middle{
-    padding-bottom: 20px;
-}
+/*.topic .middle{*/
+    /*padding-bottom: 20px;*/
+/*}*/
 
 .file-item i{
     display: none;
@@ -681,4 +704,12 @@
 }
 .team-item button{
     margin-left: 10px;
+}
+.null-tips{
+    text-shadow: 0 2px 0 #fff, 0 -2px 0 #f8f6f2;
+    font-size:16px;
+    color: #64868e;
+    padding-top: 90px;
+    height:100%;
+    text-align: center;
 }

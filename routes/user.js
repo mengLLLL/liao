@@ -60,6 +60,7 @@ router.post('/signup', function (req, res) {
                 errMsg: '保存失败'
               })
             }else{
+              console.log('newUser', saveResult)
              callback(null,{
                success: true,
                userObj: saveResult
@@ -144,13 +145,14 @@ router.post('/signup', function (req, res) {
       }
     },
     setSession: ['checkInvest', 'getTeamName', function (results, callback) {
-      console.log('setSession', results.checkInvest);
+      //console.log('setSession', results.checkInvest);
       if(results.checkInvest.success){
         console.log('set user session')
         req.session.user = {
           userId: results.checkInvest.userObj.userId,
-          nickName: results.checkInvest.userObj.nickName
-        }
+          nickName: results.checkInvest.userObj.nickName,
+          avatar: results.checkInvest.userObj.avatar
+        };
         if(results.checkInvest.invest){
           //说明是被邀请的注册用户,那么session里面要存team
           if(results.getTeamName.success){
@@ -266,7 +268,7 @@ router.post('/signup', function (req, res) {
 
     }]
   }, function (err, finalResults) {
-    console.log('finalResults', finalResults)
+    //console.log('finalResults', finalResults)
     if(err){
       res.render('404Page')
     }else{
@@ -355,7 +357,7 @@ router.post('/login', function (req, res) {
         }]
       }, function (err, finalResults){
 
-        console.log('finalResults', finalResults)
+        //console.log('finalResults', finalResults)
         req.session.team = {
           teamName: finalResults.getTeamName,
           teamId: finalResults.getTeamId
@@ -743,7 +745,7 @@ router.get("/exchange/team", function (req, res) {
       callback(null,req.session);
     }]
   }, function (err, finalResults) {
-    console.log('exchange', finalResults)
+    //console.log('exchange', finalResults)
     //if(err){
     //  console.error(err)
     //  res.redirect('/liao')

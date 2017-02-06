@@ -7,6 +7,10 @@ var ChatRecordSchema = new mongoose.Schema({
   topicId: Number,
   chatItem:[{
     chat_type: Number,
+    fileName:{
+      type: String,
+      default:""
+    },
     chatItemId: Number,
     atwho:{
       userId: Number,
