@@ -3,14 +3,12 @@ body{
     height:100%;
     background-color:#FAF8F8 !important;
     overflow: hidden;
-
+    font-family : Microsoft Yahei,Helvetica Neue,Helvetica,Arial,PingFang SC,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
 }
 *{
     margin:0;
     padding:0;
-    -webkit-font-smoothing: antialiased !important;
-
-    font-family : Microsoft Yahei,Helvetica Neue,Helvetica,Arial,PingFang SC,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+    -webkit-font-smoothing: initial !important;
 }
 input{
     outline:none;
