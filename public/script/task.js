@@ -147,11 +147,7 @@ $(".file-box").click(function (e) {
 
 //添加任务节点shade
 $("#addNewTaskNode").click(function (e) {
-  $("#nodeTask").show()
-})
-$("#getMembers").click(function (e) {
-  e.preventDefault();
-  var teamId = $("#getMembers").data("teamid");
+  var teamId = $("#nodeTask").data("teamid");
   var obj = {
     teamId: teamId,
     task: true,
@@ -164,6 +160,7 @@ $("#getMembers").click(function (e) {
     dataType: 'json',
     success: function (data) {
       if(data.success){
+        $('.member-list').html("");
         var members = data.teamMembers;
         console.log('data',data)
         members.forEach(function (obj, i, arr) {
@@ -174,9 +171,16 @@ $("#getMembers").click(function (e) {
             "</span>" +
             "</div>")
         })
+
+        $("#nodeTask").show()
       }
     }
   })
+
+})
+$("#getMembers").click(function (e) {
+  e.preventDefault();
+
 });
 
 //添加任务节点

@@ -170,13 +170,15 @@ block content
 											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(2,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
 								if(item.chat_type == 3)
 									if item.atwho.userId
-										.chatItem(class="#{item.atwho.userId == session.user.userId ? 'impressed' : 'normal'}")
+										.chatItem.unpreview-file(class="#{item.atwho.userId == session.user.userId ? 'impressed' : 'normal'}")
+											i.fa.fa-file
 											a.file-name(href="#{item.chatContent}") #{item.fileName}
 										span.chat-operate
 											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "chatDisAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")
 											i.fa(class = collect_tag == true ? "fa-star" : "fa-star-o" id="collect-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= collect_tag == true ? "chatDisCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")" : "chatCollect(3,#{item.chatItemId},#{topic.chatRecordId} ," + session.user.userId + ")")
 									else
-										.chatItem(class="normal")
+										.chatItem(class="normal unpreview-file")
+											i.fa.fa-file
 											a.file-name(href="#{item.chatContent}") #{item.fileName}
 										span.chat-operate
 											i.fa(class= agree_tag == true ? "fa-thumbs-up" : "fa-thumbs-o-up" id="agree-" + "#{topic.chatRecordId}" + "-#{item.chatItemId}" onclick= agree_tag == true ? "" : "chatAgree(#{item.chatItemId}, #{topic.chatRecordId} ," + session.user.userId + ")")

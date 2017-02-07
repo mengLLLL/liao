@@ -356,3 +356,13 @@ input[type='checkbox']{
     height:100%;
     text-align: center;
 }
+#createTaskItem{
+    left: 325px;
+}
+
+#closeTask{
+    left: 222px;
+}
+#updateTask{
+    left: 213px;
+}

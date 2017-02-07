@@ -148,7 +148,7 @@ block content
 					input#newEndTime(value="#{moment(task.endAt).format('YYYY.MM.DD')}" name="task-endAt")
 				button.m-btn#updateTask 确认修改
 				button.m-btn#closeTask 关闭任务
-		.shade#nodeTask
+		.shade#nodeTask(data-teamid="#{session.team.teamId}")
 			form(role='form' name='addNewTaskNode')
 				.header 添加任务节点
 				.input-group
@@ -157,7 +157,7 @@ block content
 				.input-group
 					label 结束时间
 					input#taskEndTime
-				button.m-btn#getMembers(data-teamid="#{session.team.teamId}") 分派
+
 				.member-list
 				button.m-btn#createTaskItem 完成
 		.shade#filePreview

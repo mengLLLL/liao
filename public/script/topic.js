@@ -35,11 +35,11 @@ socket.on('public', function(data){
           "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
           "</div>" +
           "<div class='chatItem impressed'>" + data.chatObj.chatContent +
-          "<span class='fa fa-ellipsis-h chat-operate'>" +
+          "</div>" +
+          "<span class=' chat-operate'>" +
           "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
           "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
           "</span>"+
-          "</div>" +
           "</div>")
       }else{
         $("#chatPart").append("<div class='chat-item' data-chatitemid='"+data.chatObj.chatItemId+"' data-chatrecordid='"+data.chatObj.chatRecordId+"'>" +
@@ -50,11 +50,11 @@ socket.on('public', function(data){
           "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
           "</div>" +
           "<div class='chatItem'>" + data.chatObj.chatContent +
-          "<span class='fa fa-ellipsis-h chat-operate'>" +
+          "</div>" +
+          "<span class='chat-operate'>" +
           "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
           "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
           "</span>"+
-          "</div>" +
           "</div>")
       }
     }else{
@@ -67,11 +67,11 @@ socket.on('public', function(data){
         "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
         "</div>" +
         "<div class='chatItem'>" + data.chatObj.chatContent +
-        "<span class='fa fa-ellipsis-h chat-operate'>" +
+        "</div>" +
+        "<span class=' chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
         "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(1,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
-        "</div>" +
         "</div>")
     }
 
@@ -87,12 +87,12 @@ socket.on('public', function(data){
         "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
         "</div>" +
         "<div class='chatItem'>" +"<img class='preview-img' src='"+data.chatObj.chatContent+"'>"+
-        "<span class='fa fa-ellipsis-h chat-operate'>" +
+        "</div>" +
+        "<span class='chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
         "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(2,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
-        "</div>" +
-        "</div>")
+        "</div>");
 
       $("#topicFileCenter .file-box").append("<div id='"+data.file_id+"' data-src='"+data.chatObj.chatContent+"' data-filetype='1' data-upuserid='"+data.user.userId+"' data-upusername='"+data.user.userName+"' class='file-item'>" + data.chatObj.fileName +
         "<i class='fa fa-star-o collectFile'></i>"+
@@ -100,8 +100,7 @@ socket.on('public', function(data){
         "</div>")
 
     }else{
-      //不可以预览
-
+      //不可以预览,不等于2那就肯定等于3了
       $("#chatPart").append("<div class='chat-item' data-chatitemid='"+data.chatObj.chatItemId+"' data-chatrecordid='"+data.chatObj.chatRecordId+"'>" +
         "<div class='userMsg'>" +
         "<a href='#' class='avatar'><img src='"+data.user.avatar+"'>" +
@@ -109,12 +108,12 @@ socket.on('public', function(data){
         "<span class='name'>"+data.user.userName+"</span>" +
         "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
         "</div>" +
-        "<div class='chatItem'>" +"<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName+"</a>"+
-        "<span class='fa fa-ellipsis-h chat-operate'>" +
+        "<div class='chatItem'><i class='fa fa-file'></i>" +"<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName+"</a>"+
+        "</div>" +
+        "<span class=' chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
         "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(3,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
-        "</div>" +
         "</div>")
       $("#topicFileCenter .file-box").append("<div id='"+data.file_id+"' data-src='"+data.chatObj.chatContent+"' data-filetype='1' data-upuserid='"+data.user.userId+"' data-upusername='"+data.user.userName+"' class='file-item'>" + "<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName + "下载</a>"+
         "<i class='fa fa-star-o collectFile'></i>"+
@@ -612,7 +611,12 @@ $(document).ready(function() {
   });
   $('#chatPart').bind('mousewheel', function (e) {
     if(e.deltaY < 0){
-      $("#tipChat").hide();
+      if($("#hasNoRecord").is(":visible") == true){
+        $("#hasNoRecord").hide();
+      }
+      if($("#tipChat").is(":visible") == true){
+        $("#tipChat").hide();
+      }
     }
     if(e.deltaY > 0 && $('#chatPart').scrollTop()==0){
       if($("#hasNoRecord").is(":visible") == false){
@@ -645,7 +649,7 @@ $(document).ready(function() {
           console.log('history data',data);
           if(data.hisChat.length == 0){
             $("#hasNoRecord").show();
-            $("#tipChat").hide()
+            $("#tipChat").remove()
           }else{
             data.hisChat.reverse().forEach(function (obj, i, arr) {
               if(obj.chat_type == 1){
@@ -939,7 +943,7 @@ $(document).ready(function() {
             existMembers.forEach(function (obj, i, arr) {
               //渲染成员列表
               if(userId !== obj.userId){
-                $("#memberSetting .existed-member-list").append("<div class='member-item' data-userid='" + obj.userId +"'>" +
+                $("#memberSetting .existed-member-list").after("<div class='member-item' data-userid='" + obj.userId +"'>" +
                   "<img class='avatar' src='"+obj.avatar+"'>" +
                   "<span>" + obj.name +
                   "</span>" +
@@ -947,8 +951,8 @@ $(document).ready(function() {
                   "</div>")
               }
             });
-            $("#memberSetting .existed-member-list").append("<button class='m-btn' id='operate'>成员管理</button>")
-            $("#memberSetting .existed-member-list").append("<button class='m-btn' id='investMember'>邀请加入</button>")
+            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='operate'>成员管理</button>")
+            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='investMember'>邀请加入</button>")
             $("#operate").click(function (e) {
               e.preventDefault();
               console.log('clicl')
@@ -959,8 +963,8 @@ $(document).ready(function() {
               $(".unexisted-member-list").show();
             })
             if(unexistMembers.length==0){
-              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>本团队中的成员都在此话题中，可以通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
             }
             unexistMembers.forEach((function (obj, i, arr) {
               $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
@@ -973,7 +977,7 @@ $(document).ready(function() {
                 "</div>")
             }));
             $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
 
           }else{
             //话题成员点开的成员列表
@@ -986,14 +990,14 @@ $(document).ready(function() {
                 "</div>" +
                 "</div>")
             });
-            $("#memberSetting .existed-member-list").append("<button class='m-btn' id='investMember'>邀请加入</button>");
+            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='investMember'>邀请加入</button>");
             $('#investMember').click(function (e) {
               e.preventDefault();
               $(".unexisted-member-list").show();
             })
             if(unexistMembers.length==0){
-              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>本团队中的成员都在此话题中，可以通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
             }
 
             unexistMembers.forEach(function (obj, i, arr) {
@@ -1007,7 +1011,7 @@ $(document).ready(function() {
                 "</div>")
             })
             $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://www.pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+              "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
 
           }
 
