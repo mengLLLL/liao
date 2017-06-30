@@ -10,11 +10,11 @@ var task = require('../mongoDB/models/task.js');
 var async = require('async');
 var moment = require('moment');
 var _ = require("lodash");
-
+var captchapng = require('captchapng');
 
 //首页
 router.get('/', function (req, res) {
-  res.render('index')
+  res.render('login')
 });
 
 //获取当前团队下面的我参与的所有话题（检查teamID为session中的，然后去检查该topic的members数组是否有自己，有就push进去就行了）
@@ -30,7 +30,7 @@ router.get('/liao', function (req, res) {
         }
         var topics=[];
         async.map(topicResults, function (item, cb) {
-          console.log('item', item)
+          //console.log('item', item)
           for(var j=0;j<item.members.length;j++){
             if(req.session.user.userId == item.members[j].userId){
               topics.push(item);
@@ -39,7 +39,7 @@ router.get('/liao', function (req, res) {
           }
           cb(null)
         }, function (err, mapResults) {
-          console.log('finalTopics',topics);
+          //console.log('finalTopics',topics);
           if(err){
             callback(null,'map err')
             return console.error(err)
@@ -77,9 +77,30 @@ router.get('/liao', function (req, res) {
         //console.log('obj',newObj)
         newTopics.push(newObj)
       });
-
-
       callback(null,newTopics)
+    }],
+    getTopicOwnerMsg: ['topicWithState', function(results, callback){
+      //这一步竟然改变了topicWithState的结果，这也太不合理了啊，为什么啊
+      // TODO 不合理，想不通为什么可以改变topicWithState的结果！
+      var topicsArr = results.topicWithState;
+      async.map(topicsArr, function (item, cb) {
+        user.find({userId: item.owner.id}, function (err, userResults) {
+          if(err){
+            cb(null,'find err')
+          }else{
+            item.owner.name = userResults[0].nickName;
+            item.owner.avatar = userResults[0].avatar;
+            cb(null, item)
+          }
+        })
+      }, function (err, mapResults) {
+        //console.log('map results', mapResults);
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
     }],
     checkTopics: ['getTopics', function (results, callback) {
       //检查是否逾期
@@ -107,7 +128,7 @@ router.get('/liao', function (req, res) {
       }, function (err, mapResults) {
         if(err){
           callback(null, 'err')
-          return console.error(err)
+          console.error(err)
         }else{
           callback(null,topics)
         }
@@ -167,9 +188,29 @@ router.get('/liao', function (req, res) {
           callback(null,tasks)
         }
       })
+    }],
+    getTaskOwnerMsg: ['checkTasks', function (results, callback) {
+      var tasks = results.checkTasks;
+      async.map(tasks, function (item, cb) {
+        user.find({userId: item.owner.id}, function (err, userResults) {
+          if(err){
+            cb(null,'find err')
+          }else{
+            item.owner.name = userResults[0].nickName;
+            item.owner.avatar = userResults[0].avatar;
+            cb(null,item)
+          }
+        })
+      }, function (err, mapResults) {
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
     }]
   }, function (err, finalResults) {
-    console.log('finalresults', finalResults.topicWithState);
+    //console.log('finalresults topic', finalResults.topicWithState);
     res.render('liao',{
       topics: finalResults.topicWithState,
       tasks: finalResults.checkTasks
@@ -187,7 +228,138 @@ router.get('/404', function (req, res) {
 });
 
 
+router.get('/backstage', function (req, res) {
+  async.auto({
+    getUsers: function (callback) {
+      user.find({}, function (err, userResults) {
+        if(err){
+          callback(null,{
+            success: false,
+            users: [],
+            errType: '1'
+          })
+        }else{
+          callback(null,{
+            success: true,
+            users: userResults
+          })
+        }
+      })
+    },
+    getTeams: function (callback) {
+      team.find({}, function (err, teamResults) {
+        if(err){
+          callback(null,{
+            success: false,
+            teams:[],
+            errType: '1'
+          })
+        }else{
+          callback(null,{
+            success: true,
+            teams: teamResults
+          })
+        }
+      })
+    },
+    getTeamOwnerMsg: ['getTeams', function (results,callback) {
+      if(results.getTeams.teams.length > 0){
+        async.map(results.getTeams.teams, function(item, cb){
+          user.find({userId: item.manager.id}, function (err, userResults) {
+            if(err){
+              cb(null,'find err')
+            }else{
+              item.manager.name = userResults[0].nickName;
+              cb(null, item)
+            }
+          })
+        }, function (err, mapResults) {
+          if(err){
+            callback(null,{
+              success: false
+            })
+          }else{
+            callback(null)
+          }
+        })
+      }
+    }]
+  }, function(err, finalResults){
+    if(err){
+      console.error(err)
+    }
+    res.render('back-allUser',{
+      users: finalResults.getUsers.users,
+      teams: finalResults.getTeams.teams
+    })
+  })
+});
 
+router.get('/backstage/team', function (req, res) {
+  async.auto({
+    getTeams: function (callback) {
+      team.find({}, function (err, teamResults) {
+        //console.log('teams', teamResults)
+        if(err){
+          callback(null,{
+            success: false,
+            errMsg: 'find err'
+          })
+        }else{
+          callback(null,{
+            success: true,
+            teams: teamResults
+          })
+        }
+      })
+    },
+    getTeamOwnerMSg: ['getTeams', function(results, callback){
+      if(results.getTeams.success){
+        async.map(results.getTeams.teams, function (item, cb) {
+          user.find({userId: item.manager.id}, function(err, userResults){
+            if(err){
+              cb(null,'find err')
+            }else{
+              var teamObj = {
+                team: item,
+                teamOwner:{
+                  nickName: userResults[0].nickName,
+                  userId: userResults[0].userId,
+                  realName: userResults[0].realName.name
+                }
+              }
+              cb(null,teamObj)
+            }
+          })
+        }, function (err, mapResults) {
+          //console.log('map ddd',mapResults)
+          if(err){
+            callback(null,{
+              success: false
+            })
+          }else{
+            callback(null,{
+              success: true,
+              teams: _.compact(mapResults)
+            })
+          }
+        })
+      }
+    }]
+  }, function (err, finalResults) {
+    if(err){
+      res.render('404Page')
+    }else{
+      if(finalResults.getTeamOwnerMSg.success){
+        //console.log('dd',finalResults.getTeamOwnerMSg)
+        res.render('back-allTeam',{
+          teams: finalResults.getTeamOwnerMSg.teams
+        })
+      }else{
+        res.render('404Page')
+      }
+    }
+  })
 
-
+})
 module.exports = router;

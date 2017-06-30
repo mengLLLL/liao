@@ -1,14 +1,25 @@
 /*all basic and public stylesheet*/
+html, body{
+    height:100%;
+    overflow-y: scroll;
+}
 body{
     height:100%;
     background-color:#FAF8F8 !important;
-    overflow: hidden;
+    overflow-y: scroll;
     font-family : Microsoft Yahei,Helvetica Neue,Helvetica,Arial,PingFang SC,Hiragino Sans GB,WenQuanYi Micro Hei,sans-serif !important;
+}
+[data-toggle="tooltip"]{
+    cursor: pointer;
 }
 *{
     margin:0;
     padding:0;
     -webkit-font-smoothing: initial !important;
+}
+.main-content{
+    overflow: hidden;
+    height:100%;
 }
 input{
     outline:none;
@@ -50,13 +61,13 @@ button{
     border: none;
 }
 
-/*navbar*/
-.navbar{
+/*m-navbar*/
+.m-navbar{
     width:100%;
     line-height: 50px;
     height: 50px;
     background: #222831;
-    overflow: hidden;
+    /*overflow: hidden;*/
     top:0;
     color: white;
     margin-bottom: 50px !important;
@@ -65,26 +76,26 @@ button{
     -moz-border-radius:0 !important;
     border-radius:0 !important;
 }
-.navbar a{
+.m-navbar a{
     color: white;
 }
-.navbar .nav-left{
+.m-navbar .nav-left{
     float: left;
     margin-left: 10px;
 
 }
 
-.navbar .nav-right{
+.m-navbar .nav-right{
     float: right;
     height:100%;
 }
-.navbar .nav-right li{
+.m-navbar .nav-right li{
     height:100%;
 }
-.navbar .nav-right > li:first-child{
+.m-navbar .nav-right > li:first-child{
     margin-right: 30px;
 }
-.navbar .nav-right .user-msg{
+.m-navbar .nav-right .user-msg{
     margin-right: 25px;
 }
 .nav-right > li{
@@ -93,24 +104,21 @@ button{
     margin-left: 20px;
     cursor: pointer;
 }
-.navbar .nav-right .avatar{
+.m-navbar .nav-right .avatar{
     width:40px;
     height:40px;
     display: inline-block;
 }
-.navbar .nav-right .avatar img{
+.m-navbar .nav-right .avatar img{
     margin-bottom: 4px;
     width:40px;
     height:40px;
     border-radius: 50%;
 }
-.navbar .nav-right > li{
-    color: #d9d9d9;
-}
-.navbar .nav-right li:hover{
+.m-navbar .nav-right li:hover{
     color: white;
 }
-.navbar .nav-right .user-setting{
+.m-navbar .nav-right .user-setting{
     border: 1px solid rgba(0,0,0,0.3);
     background: white;
     color: #000 ;
@@ -129,7 +137,7 @@ button{
     box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.4);
     display: none;
 }
-.navbar .team-setting{
+.m-navbar .team-setting{
     border: 1px solid rgba(0,0,0,0.3);
     background: white;
     color: #000;
@@ -148,58 +156,58 @@ button{
     box-shadow: 2px 2px 11px rgba(0, 0, 0, 0.4);
     display: none;
 }
-.navbar .nav-right .user-setting a{
+.m-navbar .nav-right .user-setting a{
     color: #000;
 }
-.navbar .nav-left .team-setting a{
+.m-navbar .nav-left .team-setting a{
     color: #000;
 }
 
-.navbar .nav-right .user-setting li{
+.m-navbar .nav-right .user-setting li{
     line-height:45px;
     font-size:15px;
     text-align: center;
 }
-.navbar .nav-left .team-setting li{
+.m-navbar .nav-left .team-setting li{
     line-height:45px;
     font-size:15px;
     text-align: center;
 }
-.navbar .nav-right .user-setting li:first-child{
+.m-navbar .nav-right .user-setting li:first-child{
     -webkit-border-radius:6px 6px 0 0;
     -moz-border-radius:6px 6px 0 0;
     border-radius:6px 6px 0 0;
 }
-.navbar .nav-left .team-setting li:first-child{
+.m-navbar .nav-left .team-setting li:first-child{
     -webkit-border-radius:6px 6px 0 0;
     -moz-border-radius:6px 6px 0 0;
     border-radius:6px 6px 0 0;
 }
-.navbar .nav-right .user-setting li:last-child{
+.m-navbar .nav-right .user-setting li:last-child{
     -webkit-border-radius:0 0 6px 6px;
     -moz-border-radius:0 0 6px 6px;
     border-radius:0 0 6px 6px;
 }
-.navbar .nav-left .team-setting li:last-child{
+.m-navbar .nav-left .team-setting li:last-child{
     -webkit-border-radius:0 0 6px 6px;
     -moz-border-radius:0 0 6px 6px;
     border-radius:0 0 6px 6px;
 }
 
 
-.navbar .nav-right .user-setting li:hover{
+.m-navbar .nav-right .user-setting li:hover{
     background: #2e2e2e;
 }
-.navbar .nav-left .team-setting li:hover{
+.m-navbar .nav-left .team-setting li:hover{
     background: #2e2e2e;
 }
-.navbar .nav-right .user-setting li:hover a{
+.m-navbar .nav-right .user-setting li:hover a{
     color: white;
 }
-.navbar .nav-left .team-setting li:hover{
+.m-navbar .nav-left .team-setting li:hover{
     color: white;
 }
-.navbar .nav-right .arrow-top::before,.nav-right .arrow-top::after {
+.m-navbar .nav-right .arrow-top::before,.nav-right .arrow-top::after {
     content: '';
     display: inline-block;
     border-left:9px solid transparent;
@@ -209,7 +217,7 @@ button{
     top:-10px;
     left:77px;
 }
-.navbar .nav-left .arrow-top::before,.nav-left .arrow-top::after {
+.m-navbar .nav-left .arrow-top::before,.nav-left .arrow-top::after {
     content: '';
     display: inline-block;
     border-left:9px solid transparent;
@@ -219,17 +227,17 @@ button{
     top:-10px;
     left:30px;
 }
-.navbar .nav-right .arrow-top::after {
+.m-navbar .nav-right .arrow-top::after {
     content: '';
     top:-9px;
     border-bottom: 9px solid white;
 }
-.navbar .nav-left .arrow-top::after {
+.m-navbar .nav-left .arrow-top::after {
     content: '';
     top:-9px;
     border-bottom: 9px solid white;
 }
-.navbar .nav-right .new-msg{
+.m-navbar .nav-right .new-msg{
     display: none;
     position: absolute;
     width:7px;
@@ -242,7 +250,7 @@ button{
     -moz-box-shadow: 1px 1px 10px #ff2c27;
     box-shadow: 1px 1px 10px #ff2c27;
 }
-.navbar #exchangeTeamShade{
+.m-navbar #exchangeTeamShade{
     color: #000;
 }
 
@@ -253,8 +261,10 @@ button{
     height:100%;
     top:0;
     left:0;
+    z-index:999;
     background: rgba(0,0,0,0.5);
     display: none;
+    color: #000 !important;
 }
 .shade form{
     position: relative;
@@ -268,10 +278,12 @@ button{
     line-height:50px;
     font-size: 18px;
     border-bottom: 1px solid rgba(0,0,0,0.1);
+    color: #000 !important;
 }
-.shade form label{
+.shade form .input-group label{
     display: block;
     margin-bottom: 10px;
+    color: #000 !important;
 }
 .shade form input{
     border:1px solid rgba(0,0,0,0.1);
@@ -301,7 +313,7 @@ button{
 }
 .shade .input-group{
     width:100%;
-    margin-top: 20px ;
+    margin-top: 10px ;
 }
 
 .shade button{
@@ -349,13 +361,7 @@ button{
     /*overflow-y: scroll;*/
     margin-top: 50px;
 }
-#joinTeam{
-    color: #000 !important;
-}
-#joinTeam span{
-    display: inline-block;
-    color: #000;
-}
+
 .search-team{
     width:100%;
     line-height: 20px;
@@ -377,4 +383,28 @@ button{
     -moz-box-shadow:  1px 1px 3px rgba(0,0,0,0.1) ;
     box-shadow:  1px 1px 3px rgba(0,0,0,0.1);
     background: white;
+}
+.shade .search-header{
+    line-height: 0;
+}
+.date-picker-wrapper{
+    z-index:999 !important;
+}
+.shade .team-item a{
+    float: right;
+}
+.shade .team-item{
+    line-height: 40px;
+    padding-top: 5px;
+}
+/*这个按钮是因为font-awesome的影响，所以要这样写*/
+#searchTeam{
+    line-height: 20px !important;
+    left:324px;
+}
+.shade .team-manager{
+    line-height: 0;
+}
+textarea{
+    resize: none;
 }

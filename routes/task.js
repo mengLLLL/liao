@@ -32,8 +32,8 @@ router.post("/create/task", function (req, res) {
           brief: req.body.taskBrief,
           owner: {
             id: req.session.user.userId,
-            name: req.session.user.nickName,
-            avatar: req.session.user.avatar
+            //name: req.session.user.nickName,
+            //avatar: req.session.user.avatar
           },
           taskId: results.getTaskId,
           teamId: req.session.team.teamId,
@@ -41,8 +41,8 @@ router.post("/create/task", function (req, res) {
         });
         newTask.members.push({
           userId: req.session.user.userId,
-          name: req.session.user.nickName,
-          avatar: req.session.user.avatar
+          //name: req.session.user.nickName,
+          //avatar: req.session.user.avatar
         });
         newTask.save(function (err, result) {
           if(err){
@@ -59,8 +59,8 @@ router.post("/create/task", function (req, res) {
           brief: req.body.taskBrief,
           owner: {
             id: req.session.user.userId,
-            name: req.session.user.nickName,
-            avatar: req.session.user.avatar
+            //name: req.session.user.nickName,
+            //avatar: req.session.user.avatar
 
           },
           taskId: results.getTaskId,
@@ -70,8 +70,8 @@ router.post("/create/task", function (req, res) {
         });
         newTask2.members.push({
           userId: req.session.user.userId,
-          name: req.session.user.nickName,
-          avatar: req.session.user.avatar
+          //name: req.session.user.nickName,
+          //avatar: req.session.user.avatar
 
         });
         newTask2.save(function (err, newTask2result) {
@@ -140,7 +140,7 @@ router.get('/task', function (req, res) {
   var taskId = req.query.taskId;
   async.auto({
     getTask: function(callback){
-      console.log('taskId getTAsk', taskId)
+      //console.log('taskId getTAsk', taskId)
       task.find({taskId: taskId}, function (err, taskResults) {
         if(err){
           console.error(err);
@@ -149,6 +149,32 @@ router.get('/task', function (req, res) {
         callback(null, taskResults[0])
       })
     },
+    getTaskNodeOwnerMsg: ['getTask', function (results, callback) {
+      //获取每个任务节点的user的信息
+      //TODO  这里真心搞不懂为什么会影响最后的结果呢
+      //console.log('task', results.getTask)
+      var taskArr = results.getTask.taskArr;
+      async.map(taskArr, function (item, cb) {
+        async.map(item.users, function (userItem, scb) {
+          user.find({userId: userItem.id}, function (err, userResults) {
+            if(err){
+              scb(null, 'map user err')
+            }else{
+              userItem.name = userResults[0].nickName;
+              userItem.avatar = userResults[0].avatar;
+              scb(null, userItem)
+            }
+          })
+        })
+        cb(null)
+      }, function (err, mapResults) {
+        if(err){
+          callback(null,'map err')
+        }else{
+          callback(null)
+        }
+      });
+    }],
     getTaskMembers:['getTask', function (results, callback) {
       var taskObj = results.getTask;
       async.map(taskObj.members, function (item, cb) {
@@ -159,6 +185,7 @@ router.get('/task', function (req, res) {
             cb(null,{
               userId: item.userId,
               name: userResults[0].nickName,
+              realName: userResults[0].realName.name,
               avatar: userResults[0].avatar
             })
           }
@@ -169,7 +196,7 @@ router.get('/task', function (req, res) {
           callback(null,{
             success: false,
             errMsg:'map err'
-          })
+          });
           return console.error(err)
         }else{
           callback(null,mapResults)
@@ -270,7 +297,7 @@ router.get('/task', function (req, res) {
             })
           }else{
             for(var j = 0; j< userResults[0].taskArr.length; j++){
-              console.log('for',taskId);
+              //console.log('for',taskId);
               if(userResults[0].taskArr[j].taskId == taskId){
                 taskItems.forEach(function (obj, i, arr) {
                   for(var m = 0; m< userResults[0].taskArr[j].taskItems.length; m++){
@@ -377,9 +404,28 @@ router.get('/task', function (req, res) {
       }else{
         callback(null)
       }
+    }],
+    getSubTopicOwnerMsg: ['getSubTopic', function (results, callback) {
+      var topics = results.getSubTopic;
+      async.map(topics, function(item, cb){
+        user.find({userId: item.owner.id}, function(err, userResults){
+          if(err){
+            cb(null, 'find err')
+          }else{
+            item.owner.name = userResults[0].nickName;
+            item.owner.avatar = userResults[0].avatar;
+            cb(null, item)
+          }
+        })
+      }, function (err, mapResults) {
+        if(err){
+          callback(null,'map err')
+        }else{
+          callback(null)
+        }
+      });
     }]
   }, function (err, finalResults) {
-    //console.log('percent', finalResults.getPercent)
     if(err){
       console.error(err);
       return res.render('task',{
@@ -400,6 +446,24 @@ router.post('/add/node', function (req, res) {
   var members = req.body.members;
   var brief = req.body.brief;
   async.auto({
+    tasknodeOwner: function (callback) {
+      async.map(members, function (item, cb) {
+        user.find({userId: item.id}, function(err, userResults){
+          if(err){
+            cb(null,'find err')
+          }else{
+            cb(null, userResults[0])
+          }
+        })
+      }, function (err, mapResults) {
+        console.log('map user', mapResults)
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null, mapResults)
+        }
+      })
+    },
     updateTask: function (callback) {
       task.find({taskId: taskId}, function(err, taskResults){
         if(err){
@@ -419,8 +483,8 @@ router.post('/add/node', function (req, res) {
           endAt: endTime,
           brief: brief,
           creater:{
-            userId: req.session.user.userId,
-            name: req.session.user.nickName
+            userId: req.session.user.userId
+            //name: req.session.user.nickName
           }
         });
 
@@ -436,7 +500,7 @@ router.post('/add/node', function (req, res) {
           if(j == taskResults[0].members.length){
             taskResults[0].members.push({
               userId: item.id,
-              name: item.name
+              //name: item.name
             });
             taskResults[0].markModified('members');
             cb(null,'new user')
@@ -499,7 +563,7 @@ router.post('/add/node', function (req, res) {
             msg_type: 7,
             from:{
               id: req.session.user.userId,
-              name: req.session.user.nickName
+              //name: req.session.user.nickName
             },
             content: results.updateTask.taskItem.brief,
             id:userResults[0].notification.length + 1
@@ -578,7 +642,8 @@ router.post('/add/node', function (req, res) {
       res.send({
         success: true,
         task: finalResults.updateTask.task,
-        taskItem: finalResults.updateTask.taskItem
+        taskItem: finalResults.updateTask.taskItem,
+        nodeUsers: finalResults.tasknodeOwner
       })
     }
   });

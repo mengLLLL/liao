@@ -7,7 +7,7 @@ var UserSchema = new mongoose.Schema({
   password:String,
   userId:Number,
   avatar:{
-    default:"http://donew.oss-cn-hangzhou.aliyuncs.com/liao/topic/1/2017-01-03/IMG_5426.JPG",
+    default:"",
     type:String
   },
   nickName:String,
@@ -80,6 +80,7 @@ var UserSchema = new mongoose.Schema({
       default: false
     },
     content:String,
+    reply_content: String,
     team:{
       id: Number,
       name: String
@@ -139,9 +140,6 @@ var UserSchema = new mongoose.Schema({
   }
 });
 
-UserSchema.statics.updateTag = function (id, cb) {
-  this.find({userId: id},cb)
-}
 module.exports = UserSchema;
 
-//file_id 对应存的是
+

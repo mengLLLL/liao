@@ -27,6 +27,14 @@ $("#newEndTime").dateRangePicker({
   singleMonth: true
 });
 
+$(function () {
+  $('.file-item').hover(function () {
+    $(this).children('i').show();
+  }, function () {
+    $(this).children('i').hide()
+  })
+})
+
 
 $("#addNewTopic").click(function () {
   $('.shade input').val("");
@@ -91,9 +99,11 @@ $(".file-box").click(function (e) {
     //预览
     if($(e.target).data('filetype')==1){
       console.log('预览')
+      var fileName = $(e.target).children('.file-name').html();
+      console.log('file name', fileName)
       $("#filePreview").children('.box').html("")
       e.stopPropagation();
-      $("#filePreview").children('.box').prepend('<img src="'+$(e.target).data('src')+'">');
+      $("#filePreview").children('.box').prepend('<img src="'+$(e.target).data('src')+'"><span class="name">'+fileName +'</span>');
       $("#filePreview").show();
     }
   }
@@ -197,9 +207,9 @@ $("#createTaskItem").click(function(e){
     return swal("请输入任务描述")
   }
 
- if(!moment().isBefore(endTime)){
-    return swal('请选择正确的时间') ;
-  }
+ //if(!moment().isBefore(endTime)){
+ //   return swal('请选择正确的时间') ;
+ // }
 
   moment.locale('zh-cn');
   var i = 0;
@@ -207,7 +217,7 @@ $("#createTaskItem").click(function(e){
     if(inputs[i].checked){
       members.push({
         id: $(inputs[i]).data("id"),
-        name: inputs[i].value
+        //name: inputs[i].value
       })
     }
   }
@@ -238,8 +248,8 @@ $("#createTaskItem").click(function(e){
           "</div>" +
           "<span class='task-endTime'>距今还有"+moment(data.taskItem.endAt,"YYYYMMDD").fromNow(true)+"</span>" +
           "</div>")
-        data.taskItem.users.forEach(function (obj, i, arr) {
-          $("#taskMembers-"+data.taskItem.taskItemId).append("<span class='task-host' data-userid='"+obj.userId+"'>"+obj.name+"</span>")
+        data.nodeUsers.forEach(function (obj, i, arr) {
+          $("#taskMembers-"+data.taskItem.taskItemId).append("<span class='task-host' data-userid='"+obj.userId+"'>"+obj.nickName+"</span>")
         })
 
         $("#taskSum").val(taskSum+1);

@@ -3,121 +3,129 @@ block style
 	link(href="/css/task.css",  rel="stylesheet")
 block content
 	body.task
-		.left
-			.up.task-msg
-				.task-title#taskId(data-taskid='#{task.taskId}') #{task.title}
-				.task-brief#taskBrief #{task.brief}
-				.task-statistics
-					div
-						span 任务总数
-						input#taskSum.task-number(type="number" readonly=true value="#{task.statistics.sum}")
-					div
-						span 正在进行
-						input#taskWorking.task-number(type="number" readonly=true value="#{task.statistics.working}")
-					div
-						span 已完成
-						input#taskFinish.task-number(type="number" readonly=true value="#{task.statistics.finished}")
-					div
-						span 已逾期
-						input#taskOverdue.task-number(type="number" readonly=true value="#{task.statistics.overdue}")
-					div
-						span 进度
-						input#taskPercent(value="#{task.statistics.percent}%" readonly=true)
-				.time
-					if(moment().isBefore(task.endAt))
-						.end-time 截止时间 #{moment(task.endAt).format('YYYY年MM月DD日')}
-						.from-now 距今还有 #{moment(task.endAt,'YYYY.MM.DD').fromNow(true)}
-					else
-						.overdue 已 逾期 #{moment(task.endAt,'YYYY.MM.DD').fromNow(true)}
-			.down.task-member
-				.title 成员
-				each user in taskMembers
-					.user-item
-						.user-avatar
-							img(src="#{user.avatar}")
-						.userMsg
-							span #{user.name}
-
-
-		.middle(data-userid=session.user.userId data-ownerid="#{task.owner.id}")
-			.task-header  任务列表
-				span.new-item
-					span.fa.fa-plus-circle#addNewTaskNode
-				if(session.user.userId == task.owner.id)
-					span.task-setting
-						span#setting.fa.fa-cogs
-
-			.task-items
-				if(task.taskArr.length > 0)
-					each item in task.taskArr
-						- var classStr
-						if item.condition == 1
-							- console.log('item condition 1', item.condition)
-							- classStr = 'done'
-						else if item.condition == 0
-							- console.log('item condition 0', item.condition)
-							- classStr = 'working'
+		.main-content
+			.left
+				.up.task-msg
+					.task-title#taskId(data-taskid='#{task.taskId}') #{task.title}
+					.task-brief#taskBrief #{task.brief}
+					.task-statistics
+						div
+							span 任务数
+							input#taskSum.task-number(type="number" readonly=true value="#{task.statistics.sum}")
+						div
+							span 正进行
+							input#taskWorking.task-number(type="number" readonly=true value="#{task.statistics.working}")
+						div
+							span 已完成
+							input#taskFinish.task-number(type="number" readonly=true value="#{task.statistics.finished}")
+						div
+							span 已逾期
+							input#taskOverdue.task-number(type="number" readonly=true value="#{task.statistics.overdue}")
+						div
+							span 总进度
+							input#taskPercent(value="#{task.statistics.percent}%" readonly=true)
+					.time
+						if(moment().isBefore(task.endAt))
+							.end-time 截止时间 #{moment(task.endAt).format('YYYY年MM月DD日')}
+							.from-now 距今还有 #{moment(task.endAt, 'YYYY.MM.DD').fromNow(true)}
 						else
-							- console.log('item condition 2', item.condition)
-							- classStr = 'overdue'
-						div.task-node(class=classStr id='node-'+ "#{item.taskItemId}")
-							if item.condition !== 1
-								input(type="checkbox" value="task-"+ item.taskItemId onclick= "finishTask(" +item.taskItemId+ ",'"+ session.user.nickName +"')" )
-							span.task-brief #{item.brief}
-							.task-node-member(id="taskMembers-"+item.taskItemId) 执行人:
-								each subItem in item.users
-									span.task-host(data-userid="#{subItem.id}") #{subItem.name}
-							span.task-endTime
-								if(item.condition==true)
-									.end-time 已完成
-								else
-									if (moment().isBefore(item.endAt))
-										.end-time 距今还有 #{moment(item.endAt,"YYYYMMDD").fromNow(true)}
-									else
-										.end-time 已逾期 #{moment(item.endAt,"YYYYMMDD").fromNow(true)}
-		.right
-			.up#taskFileCenter
-				.title
-					span 文件中心
-					a(href='#').fa.fa-plus-circle#addFile
-				.input-group
-					.file-upload-group
-						input#chooseFile(type="file" class="input-file")
-						input.input-file-upload(type="text" placeholder="点击选择文件")
-						input#project-logo(type="hidden")
-						button#confirmFile.m-btn.btn-default(onclick="uploadFile(this,'task')") 上传
-						span.file-upload-tip
-				if task.files.length > 0
-					.file-box
-						each item in task.files
-							- var c_tag = false
-							each u_item in item.collectors
-								if u_item.userId == session.user.userId
-									- c_tag = true
-							if item.file_type==1
-								.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername='#{item.uploader.name}') #{item.fileName}
-									i.fa(class= c_tag==true?"cancelCollect fa-star":"collectFile fa-star-o")
-									i.fa.fa-trash.deleteFile
-							else
-								.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername="#{item.uploader.name}")
-									pan #{item.fileName}
-									a(href="#{item.source}") 下载
-									i.fa.fa-star-o.collectFile
-									i.fa.fa-trash.deleteFile
+							.overdue 已逾期 #{moment(task.endAt, 'YYYY.MM.DD').fromNow(true)}
+				.down.task-member
+					.title
+						span 成员
+					.member-list
+						each user in taskMembers
+							.user-item
+								.user-avatar
+									img(src="#{user.avatar}")
+								.userMsg
+									span(data-toggle='tooltip' title="#{user.realName}" data-placement='top') #{user.name}
 
-			.down#taskTopic
-				.title
-					span 话题中心
-					i.fa.fa-plus-circle#addNewTopic
-				if subTopic
-					.subTopic-box
-						each item in subTopic
-							.sub-item
-								.sub-topic-title
-									a(href="/topic?topicId="+"#{item.topicId}") #{item.title}
-								.sub-topic-owner 由#{item.owner.name}创建
-				else
-					div.null-tips 暂无话题
+
+			.middle(data-userid=session.user.userId data-ownerid="#{task.owner.id}")
+				.task-header  任务列表
+					if task.condition == 0 || task.condition == 2
+						span.new-item
+							span.fa.fa-plus-circle#addNewTaskNode
+					if(session.user.userId == task.owner.id)
+						span.task-setting
+							span#setting.fa.fa-cogs
+
+				.task-items
+					if(task.taskArr.length > 0)
+						each item in task.taskArr
+							- var classStr
+							if item.condition == 1
+								- console.log('item condition 1', item.condition)
+								- classStr = 'done'
+							else if item.condition == 0
+								- console.log('item condition 0', item.condition)
+								- classStr = 'working'
+							else
+								- console.log('item condition 2', item.condition)
+								- classStr = 'overdue'
+							div.task-node(class=classStr id='node-' + "#{item.taskItemId}")
+								if item.condition !== 1
+									input(type="checkbox" value="task-" + item.taskItemId onclick= "finishTask(" + item.taskItemId + ",'" + session.user.nickName + "')" )
+								span.task-brief #{item.brief}
+								.task-node-member(id="taskMembers-" + item.taskItemId) 执行人:
+									each subItem in item.users
+										span.task-host(data-userid="#{subItem.id}") #{subItem.name}
+								span.task-endTime
+									if(item.condition == true)
+										.end-time 已完成
+									else
+										if (moment().isBefore(item.endAt))
+											.end-time 距今还有 #{moment(item.endAt, "YYYYMMDD").fromNow(true)}
+										else
+											.end-time 已逾期 #{moment(item.endAt, "YYYYMMDD").fromNow(true)}
+			.right
+				.up#taskFileCenter
+					.title
+						span 文件中心&nbsp;
+						if task.condition == 0 || task.condition == 2
+							i(data-toggle="tooltip" title="上传" data-placement="bottom").fa.fa-plus-circle#addFile
+					.input-group
+						.file-upload-group
+							input#chooseFile(type="file" class="input-file")
+							input.input-file-upload(type="text" placeholder="点击选择文件")
+							input#project-logo(type="hidden")
+							button#confirmFile.m-btn.btn-default(onclick="uploadFile(this,'task')") 上传
+							span.file-upload-tip
+					.file-box
+						if task.files.length > 0
+							each item in task.files
+								- var c_tag = false
+								each u_item in item.collectors
+									if u_item.userId == session.user.userId
+										- c_tag = true
+								if item.file_type == 1
+									.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername='#{item.uploader.name}')
+										span.file-name #{item.fileName}
+										i.fa(class= c_tag == true ? "cancelCollect fa-star" : "collectFile fa-star-o")
+										i.fa.fa-trash.deleteFile
+								else
+									.file-item(id="#{item._id}" data-src="#{item.source}" data-filetype="#{item.file_type}" data-upuserid='#{item.uploader.id}' data-upusername="#{item.uploader.name}")
+										a(href="#{item.source}")
+											span.file-name #{item.fileName}
+										span.fa.fa-download
+										i.fa.fa-star-o.collectFile
+										i.fa.fa-trash.deleteFile
+
+				.down#taskTopic
+					.title
+						span 话题中心&nbsp;
+						if task.condition == 0 || task.condition == 2
+							i(data-toggle="tooltip" title="新建" data-placement="bottom").fa.fa-plus-circle#addNewTopic
+					if subTopic
+						.subTopic-box
+							each item in subTopic
+								.sub-item
+									.sub-topic-title
+										a(href="/topic?topicId=" + "#{item.topicId}") #{item.title}
+									.sub-topic-owner 由#{item.owner.name}创建
+					else
+						div.null-tips 暂无话题
 
 
 		.shade#addTopic

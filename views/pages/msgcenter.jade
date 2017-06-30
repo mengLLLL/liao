@@ -14,37 +14,58 @@ block content
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								a(href="/topic?topicId=" + "#{item.topic.id}") 在话题#{item.topic.title}中@了你 点击进入话题
-						if(item.msg_type == 5)
+						else if(item.msg_type == 5)
 							.item(id="noti" + "#{item.id}")
 								span.name#invest #{item.from.name}
 								span 邀请你加入
 								span#investTopic #{item.topic.title}
-						if(item.msg_type == 6)
+						else if(item.msg_type == 6)
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 点赞#{item.content}
-						if(item.msg_type == 7)
+						else if(item.msg_type == 7)
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 为你创建了任务--#{item.content}
-						if(item.msg_type == 8)
+						else if(item.msg_type == 8)
 							.item(id="noti" + "#{item.id}")
 								each u in item.task.users
 									span.name #{u.name}
 								span 完成了任务-- #{item.content}
 								a(href="/task?taskId=" + "#{item.task.taskId}") 点击查看详情
+						else if(item.msg_type == 9)
+							.item(id='noti'+'#{item.id}')
+								span.name #{item.from.name}
+								span 回复了你在话题#{item.topic.title}中的发言
+								a(href="/topic?topicId="+"#{item.topic.id}") 点击查看详情
+						else if(item.msg_type == 10)
+							.item(id='noti'-'#{item.id}')
+								span.name #{item.from.name}
+								span 同意你加入#{item.team.name}
+						else if(item.msg_type == 11)
+							.item(id='noti' - '#{item.id}')
+								span.name #{item.from.name}
+								span 拒绝你加入#{item.team.name}
+						else
+							span.zero.fa.fa-bell-o 没有未读消息
+
 				else
 					span.zero.fa.fa-bell-o 没有未读消息
 			.unhandle-msg.msg-box(id='1')
-				if notifications.length > 0
-					each item in notifications
+				if unhandleNoti.length > 0
+					each item in unhandleNoti
+						- console.log('unhandle',item)
 						if(item.msg_type == 1)
 							.item(id="noti" + "#{item.id}")
 								input#applyUser(value="#{item.from.name}" type="text")
 								span.name #{item.team.name}
 								span 申请加入
-								button.agreeOne(data-tid="#{item.team.id}" data-rid="#{item.from.id}" data-nid="#{item.id}") 同意
-								button.refuseOne(data-tid="#{item.team.id}" data-rid="#{item.from.id}" data-nid="#{item.id}") 拒绝
+								button.m-btn.agreeOne(data-tid="#{item.team.id}" data-rid="#{item.from.id}" data-nid="#{item.id}") 同意
+								button.m-btn.refuseOne(data-tid="#{item.team.id}" data-rid="#{item.from.id}" data-nid="#{item.id}") 拒绝
+						else
+							span.zero.fa.fa-bell-o 没有待处理消息
+					else
+						span.zero.fa.fa-bell-o 没有待处理消息
 				else
 					span.zero.fa.fa-bell-o 没有待处理消息
 			.history-msg.msg-box(id='2')
@@ -54,29 +75,44 @@ block content
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 申请加入 #{item.team.name}
-						if(item.msg_type == 4)
+						else if(item.msg_type == 4)
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 在话题
 								a(href="/topic?topicId=" + "#{item.topic.id}") #{item.topic.title} 中@了你 点击进入话题
-						if(item.msg_type == 5)
+						else if(item.msg_type == 5)
 							.item(id="noti" + "#{item.id}")
 								span.name#invest #{item.from.name}
 								span#investTopic 邀请你加入#{item.topic.title}
-						if(item.msg_type == 6)
+						else if(item.msg_type == 6)
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 点赞#{item.content}
-						if(item.msg_type == 7)
+						else if(item.msg_type == 7)
 							.item(id="noti" + "#{item.id}")
 								span.name #{item.from.name}
 								span 为你创建了任务--#{item.content}
-						if(item.msg_type == 8)
+						else if(item.msg_type == 8)
 							.item(id="noti" + "#{item.id}")
 								each u in item.task.users
 									span.name #{u.name}
 								span 完成了任务-- #{item.content}
 								a(href="/task?taskId=" + "#{item.task.taskId}") 点击查看详情
+						else if(item.msg_type == 9)
+							.item(id='noti' + '#{item.id}')
+								span.name #{item.from.name}
+								span 回复了你在话题#{item.topic.title}中的发言
+								a(href="/topic?topicId=" + "#{item.topic.id}") 点击查看详情
+						else if(item.msg_type == 10)
+							.item(id='noti' - '#{item.id}')
+								span.name #{item.from.name}
+								span 同意你加入#{item.team.name}
+						else if(item.msg_type == 11)
+							.item(id='noti' - '#{item.id}')
+								span.name #{item.from.name}
+								span 拒绝你加入#{item.team.name}
+						else
+							span.zero.fa.fa-bell-o 没有已读消息
 				else
 					span.zero.fa.fa-bell-o 没有已读消息
 	script(src="/socket.io/socket.io.js")

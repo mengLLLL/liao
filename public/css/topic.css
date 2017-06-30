@@ -21,10 +21,20 @@
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
     /*background-color: #FFEE82;*/
 }
-.topic .left{
+table{
+    background: #ffffff !important;
+}
+.Table{
+    background: #fff;
+    padding:20px;
+    margin: 50px;
+
+}
+.left{
     width:20%;
-    position: absolute;
-    left:0;
+    /*position: absolute;*/
+    /*left:0;*/
+    float: left;
     height:100%;
     display: inline-block;
     border-right: 8px solid #fff;
@@ -33,8 +43,8 @@
     height:45%;
     padding:10px 5px 0 0;
 }
-.topic .left .height90{
-    height:90% !important;
+.topic .left .height100{
+    height:100% !important;
 }
 .topic .left .summary{
     text-align: left;
@@ -141,9 +151,9 @@
     border-radius: 20px 0 0 20px;
     color: #fafafa !important;
 }
-.topic .right{
+.right{
     width:20%;
-    position: absolute;
+    /*position: absolute;*/
     right:0;
     /*float: left;*/
     height:100%;
@@ -194,14 +204,16 @@
     width:60%;
     height:100%;
     left: 20%;
-    position: absolute;
+    /*position: absolute;*/
     /*background: #00b3ee;*/
     /*position: fixed;*/
-    /*float: left;*/
+    float: left;
     display: inline-block;
 }
 .topic .middle .topicMsg-part{
     position: relative;
+    /*overflow: scroll;*/
+    height: 95px;
     border-bottom: 1px solid #ccc;
 }
 .topic .middle .topicMsg-part .topic-title{
@@ -210,12 +222,11 @@
     margin-right: 20px;
     width:90%;
 }
-/*这里以后如果简介很长修改样式*/
 .topic .middle .brief{
     font-size: 14px;
     display: inline-block;
     max-width:calc(100% - 40px);
-    margin-left: 5px;
+    padding-left: 15px;
 }
 .topic .middle .rest-time{
     margin-left: 15px;
@@ -223,7 +234,7 @@
 .topic .middle .rest-time span{
     display: inline-block;
     margin-right: 15px;
-    font-size: 14px;
+    font-size: 12px;
     color: #8c8c8c;
 }
 .file-upload-group{
@@ -270,7 +281,7 @@
 }
 .topic .middle .chat-box .input-box textarea{
     width:100%;
-    /*height:160px;*/
+    height:74%;
     padding: 5px;
     display: inline-block;
     border:none !important;
@@ -278,16 +289,12 @@
 .topic .middle .chat-box .input-box textarea:focus{
     outline: none !important;
 }
-.topic .middle .chat-box .input-box #chatSubmit{
-    font-size: 18px;
-    float: right;
-    margin-right: 5px;
-}
-.topic .middle .chat-box .input-box #addFile{
+.topic .middle .chat-box .input-box a{
     font-size: 20px;
     float: right;
     margin-right: 5px;
 }
+
 .shade{
     position: fixed;
     width:100%;
@@ -337,10 +344,10 @@
     font-size: 18px;
     border-bottom: 1px solid rgba(0,0,0,0.1);
 }
-.shade form label{
-    display: block;
-    margin-bottom: 10px;
-}
+/*.shade form label{*/
+    /*display: block;*/
+    /*margin-bottom: 10px;*/
+/*}*/
 .shade form input{
     border:1px solid rgba(0,0,0,0.1);
     line-height:35px;
@@ -368,10 +375,10 @@
     border:1px solid rgba(0,0,0,0.3);
 }
 
-.shade .input-group{
-    width:100%;
-    margin-top: 20px ;
-}
+/*.shade .input-group{*/
+    /*width:100%;*/
+    /*margin-top: 20px ;*/
+/*}*/
 
 .shade button{
     position: relative;
@@ -394,6 +401,15 @@
 #filePreview .file-operate{
     font-size: 25px;
     color: wheat;
+}
+#filePreview .name{
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 25px;
+    color: #fff;
+}
+.operate-part{
+    overflow: hidden;
 }
 #filePreview .box{
     display: inline-block;
@@ -420,12 +436,20 @@
 .memer-invest{
     background-color: #ffc0ab;
 }
+/*topic condition=0 || condiiton =2*/
+.height-condition-02{
+    height:-webkit-calc(100% - 275px);
+    height:-moz-calc(100% - 275px);
+    height:calc(100% - 275px);
+}
+.height-condition1{
+    height:-webkit-calc(100% - 160px);
+    height:-moz-calc(100% - 160px);
+    height:calc(100% - 160px);
+}
 .center-box{
     padding:0 15px;
     /*height:60%;*/
-    height:-webkit-calc(100% - 260px);
-    height:-moz-calc(100% - 260px);
-    height:calc(100% - 260px);
     overflow-y: scroll;
     overflow-x: hidden;
     position: relative;
@@ -455,6 +479,29 @@
     font-size: 10px;
     color: rgba(0, 0, 0, 0.6);
 }
+.replys-box{
+    background: #fff;
+    padding:0 12px;
+    margin-top: 5px;
+}
+.reply-item .content{
+    text-align: right;
+    float: right;
+}
+.reply-item{
+    border-bottom: 1px dotted rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding-top: 5px;
+}
+.reply-item .user-name{
+    display: inline-block;
+    margin-left: 5px;
+}
+.reply-item .time{
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
 .chatItem{
     margin: 0 0 0 45px ;
     position: relative;
@@ -464,11 +511,26 @@
     -moz-border-radius:5px;
     border-radius:5px;
     display: inline-block;
-    width:calc(100% - 120px);
+    width:calc(100% - 170px);
+}
+.reply-box{
+    display: none;
+}
+.chat-item .reply-content{
+    width:100%;
+    margin-top: 5px;
+    padding:5px;
+    border: 1px solid #ccc;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+}
+.chat-item .reply-btn{
+    float: right;
 }
 .center-box .chat-operate{
     display: inline-block;
-    width: 50px;
+    width: 90px;
     position: relative;
     left:5px;
     bottom:-3px;
@@ -480,7 +542,9 @@
     position: relative;
     left:10px;
     top:-2px;
-    margin-right: 3px;
+    /*margin-right: 10px;*/
+    width:25px;
+    text-align: right;
 }
 .center-box .chat-operate:hover{
     cursor: pointer;
@@ -519,6 +583,7 @@
     -moz-border-radius:5px;
     border-radius:5px;
     z-index:9999;
+    cursor: pointer;
 }
 #summaryMoreChatDown{
     background: #F38181;
@@ -534,6 +599,8 @@
     top:452px;
     left:250px;
     font-size:12px;
+    cursor: pointer;
+
 }
 #hasNoRecord{
     background: #F38181;
@@ -541,6 +608,7 @@
     display: none;
     position: absolute;
     top:3px;
+    font-size: 12px;
     left:50%;
     margin-left: -42px;
     padding:5px;
@@ -566,9 +634,9 @@
     margin-left: 5px;
     cursor: pointer;
 }
-#addNewTask:hover{
-    color: #3EC483;
-}
+/*#addNewTask:hover{*/
+    /*color: #3EC483;*/
+/*}*/
 .at-msg{
     position: absolute;
     right:26px;
@@ -590,6 +658,7 @@
 .chat-item{
     border-bottom: 1px dotted rgba(0,0,0,0.07);
     padding: 10px 0 5px 0;
+    overflow: hidden;
 }
 
 .summary{
@@ -605,12 +674,26 @@
     margin-top: 5px;
     margin-bottom: 5px;
 }
+/*.file-name{*/
+    /*font-size: 12px;*/
+    /*text-align: right;*/
+    /*color: #718CA1;*/
+    /*margin-left: 5px;*/
+    /*display: inline-block;*/
+/*}*/
 /*.topic .middle{*/
     /*padding-bottom: 20px;*/
 /*}*/
 
 .file-item i{
+    float: right;
     display: none;
+    margin-left: 5px;
+}
+.file-item span.fa{
+    color: #337ab7 !important;
+    display: inline-block;
+    margin-left: 5px;
 }
 
 .invest-code input{
@@ -653,6 +736,7 @@
 #operate{
     margin-bottom: 10px;
     margin-right: 20px;
+    left:211px;
 }
 .shade .avatar{
     width:35px;
@@ -674,7 +758,7 @@
     margin-top: 12px;
     max-height: 250px;
     overflow: scroll;
-    padding:5px 10px 10px 0;
+    padding:10px;
     border-top:1px solid #ececec;
 }
 #investMember{
@@ -699,12 +783,7 @@
     overflow: scroll;
     margin: 5px auto;
 }
-.team-item{
-    margin-bottom: 10px;
-}
-.team-item button{
-    margin-left: 10px;
-}
+
 .null-tips{
     text-shadow: 0 2px 0 #fff, 0 -2px 0 #f8f6f2;
     font-size:16px;
@@ -716,4 +795,10 @@
 
 .unpreview-file{
     color: #337ab7;
+}
+.copy-part button{
+    float: right;
+}
+.end-time, .overdue, .from-now{
+    -webkit-font-smoothing: antialiased !important;
 }

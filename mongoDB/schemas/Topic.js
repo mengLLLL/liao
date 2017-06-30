@@ -47,8 +47,8 @@ var TopicSchema = new mongoose.Schema({
     chatContent: String,
     user:{
       id: Number,
-      name: String,
-      avatar: String
+      //name: String,
+      //avatar: String
     },
     createAt: String
   }],
@@ -79,6 +79,24 @@ var TopicSchema = new mongoose.Schema({
   }],
   noticeWho:[{
    userId: Number
-  }]
+  }],
+  table:{
+    tHead:[{
+      type:String
+    }],
+    tBody:[{
+      type:Array
+    }],
+    createAt:{
+      type: Date,
+      default: Date.now()
+    },
+    creator:{
+      id: Number,
+      name: String,
+      avatar: String
+    }
+  }
+
 });
 module.exports = TopicSchema;

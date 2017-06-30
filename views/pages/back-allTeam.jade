@@ -1,0 +1,38 @@
+extends ../layout-back
+block content
+	section.content-header
+		h1 所有团队
+	section.content
+		.row
+			.col-xs-12
+				.box
+					.box-body
+						table#teamTable.table.table-bordered.table-striped.dataTable
+							thead
+								tr
+									th 团队ID
+									th 团队名称
+									th 管理者昵称
+									th 管理者真实姓名
+									th 创建时间
+									th 编辑
+									th 详情
+							tbody
+								each item in teams
+									tr(role='row')
+										td #{item.team.teamId}
+										td
+											input(value="#{item.team.name}" readOnly=true name="teamName")
+										td
+											input(value= item.teamOwner.nickName == null || item.teamOwner.nickName == "" ? "" : "#{item.teamOwner.nickName}" readOnly=true name="nickName")
+										td #{item.teamOwner.realName}
+										td #{moment(item.team.createAt).format('YYYY.MM.DD')}
+										td
+											button.edit-btn.edit-team.btn.btn-default 修改
+											button.edit-btn.btn.btn-default.edit-confirm.editConfirmTeam(data-teamid="#{item.team.teamId}") 确认
+										td
+											a(href="/admin/team?teamId=" + item.team.teamId) 查看
+
+
+
+

@@ -2,6 +2,7 @@
  * Created by MengL on 2016/12/1.
  */
 var checkLogin = require('../middlewares/check.js').checkLogin;
+var checkAdmin = require('../middlewares/check.js').checkAdmin;
 var setSession = require('../middlewares/setSession.js').setSession;
 
 module.exports = function (app) {
@@ -13,6 +14,9 @@ module.exports = function (app) {
   //注册
   app.get('/signup', require('./user'));
   app.post('/signup', require('./user'));
+  //注册用户完善个人信息
+  app.get('/complete', require('./user'));
+  app.post('/complete', require('./user'));
   // 邀请成员
   app.get('/invest', require('./user'));
   //新用户
@@ -46,8 +50,8 @@ module.exports = function (app) {
 
   //同意加入团队
   app.post('/agree', checkLogin, require('./user'));
-  //取消同意
-  app.post('/')
+  //拒绝加入团队
+  app.post("/disagree/team", checkLogin, require('./user'));
   //得到某一个话题的页面
   app.get('/topic', checkLogin, require('./topic'));
 
@@ -72,6 +76,9 @@ module.exports = function (app) {
   app.post('/chat/discollect', checkLogin, require('./topic'));
   //收藏文件
   app.post("/chat/collect/file", checkLogin, require('./topic'));
+  //回复
+  app.post('/chat/reply', checkLogin, require('./topic'));
+
   //删除文件
   app.post("/chat/delete/file", checkLogin, require('./topic'));
   app.post('/task/delete/file', checkLogin, require('./task'));
@@ -129,4 +136,18 @@ module.exports = function (app) {
 
   app.get('/404', require('./render'));
 
+  //后台得到所有用户的信息
+  app.get('/backstage', checkAdmin, require('./render'));
+  //后台得到所有团队的信息
+  app.get('/backstage/team', checkAdmin, require('./render'));
+  //后台更改用户信息
+  app.post('/admin/edit/user', checkAdmin, require('./user'));
+  //后台查看用户详情，比如团队、任务、话题
+  app.get('/admin/user', checkAdmin,require('./user'));
+  //后台更改团队信息
+  app.post('/admin/edit/team', checkAdmin,require('./team'));
+  app.get('/admin/team', checkAdmin, require('./team'));
+
+  //获取验证码图片地址
+  app.post('/img', require('./user'));
 };

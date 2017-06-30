@@ -1,15 +1,15 @@
 extends ../layout-no-navbar
 block style
-	link(href="/css/join-team.css", rel="stylesheet")
+	link(href="/css/new-team.css", rel="stylesheet")
 block content
 	body
-		.container
+		.liao-container
 			.header 加入新团队
-			.form(role="form")
-				label 团队名称
-				input(name="teamName", placeholder="请输入团队名称")
-			button.m-btn#searchTeam 搜索
-			.search-results
-			.feedback
+			form.form-box(role="form")
+				a.back(href='/new')
+					i.fa.fa-arrow-left
+				input#teamName(name="teamName", placeholder="请输入团队名称")
+				button.btn#searchTeam(disabled=true) 搜&nbsp;&nbsp;索
+				.search-results
+				.feedback
 	script(src="/socket.io/socket.io.js")
-	script(src="/script/join-team.js")

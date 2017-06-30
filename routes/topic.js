@@ -59,8 +59,8 @@ router.post("/create/topic", function (req, res) {
             title: req.body.topicName,
             owner:{
               id:req.session.user.userId,
-              name: req.session.user.nickName,
-              avatar: req.session.user.avatar
+              //name: req.session.user.nickName,
+              //avatar: req.session.user.avatar
             },
             brief: req.body.topicContent,
             endAt: req.body.endTime,
@@ -70,7 +70,7 @@ router.post("/create/topic", function (req, res) {
           });
           newTopic.members.push({
             userId:req.session.user.userId,
-            name: req.session.user.nickName
+            //name: req.session.user.nickName
           });
           newTopic.save(function (err, saveResult) {
             //console.log('save topic',saveResult)
@@ -86,8 +86,8 @@ router.post("/create/topic", function (req, res) {
             title: req.body.topicName,
             owner:{
               id:req.session.user.userId,
-              name: req.session.user.nickName,
-              avatar: req.session.user.avatar
+              //name: req.session.user.nickName,
+              //avatar: req.session.user.avatar
             },
             brief: req.body.topicContent,
             endAt: req.body.endTime,
@@ -98,7 +98,7 @@ router.post("/create/topic", function (req, res) {
           });
           newTopic.members.push({
             userId:req.session.user.userId,
-            name: req.session.user.nickName
+            //name: req.session.user.nickName
           });
           newTopic.save(function (err, result) {
             //console.log('save topic', result)
@@ -251,16 +251,102 @@ router.get('/topic', function (req, res) {
         callback(null, findResults[0].chatItem)
       })
     }],
+    getChatItemUerMsg: ['getChatRecord', function (results, callback) {
+      //TODO 这里也好神奇啊，为什么会改变getChatRecord---callback的内容呢？
+      var chatItems = results.getChatRecord;
+      async.map(chatItems, function (item, cb) {
+        user.find({userId: item.user.id}, function (err, userResults) {
+          if(err){
+            cb(null,'find err')
+          }else{
+            item.user.avatar = userResults[0].avatar;
+            item.user.name = userResults[0].nickName;
+            cb(null, item)
+          }
+        })
+      }, function(err, mapResults){
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
+    }],
+    getChatItemReplyUserMsg: ['getChatRecord', function (results, callback) {
+      var chatItems = results.getChatRecord;
+      async.map(chatItems, function (item, cb) {
+        if(item.reply.length > 0){
+          //有reply
+          async.map(item.reply, function (r_item, r_cb) {
+            console.log('iii',r_item.user.id)
+            user.find({userId: r_item.user.id}, function (err, userResults) {
+              if(err){
+                r_cb(null,{
+                  success: false,
+                  errMsg: '数据库错误'
+                })
+              }else{
+                r_item.user.name = userResults[0].nickName;
+                r_cb(null)
+              }
+            })
+          }, function (r_err, r_mapResult) {
+            if(r_err){
+              console.error(err)
+              cb(null,{
+                success: false,
+                errMSg:'数据库错误'
+              })
+            }else{
+              cb(null)
+            }
+          })
+        }else{
+          cb(null)
+        }
+      }, function (err, mapResult) {
+        if(err){
+          console.error(err)
+          callback(null,{
+            success: false,
+            errMsg:'数据库错误'
+          })
+        }else{
+          callback(null,{
+            success: true
+          })
+        }
+      })
+    }],
     getSummarys: function (callback) {
       topic.find({topicId: topicId}, function (err, topicResults) {
         if(err){
           callback(null,'err');
           return console.error(err)
         }
-
         callback(null, topicResults[0].summarys)
       })
     },
+    getSummarysUserMsg: ['getSummarys', function (results, callback) {
+      var summarys = results.getSummarys;
+      async.map(summarys, function (item, cb) {
+        user.find({userId: item.user.id}, function (err, userResults) {
+          if(err){
+            cb(null, 'find err')
+          }else{
+            item.user.name = userResults[0].nickName;
+            item.user.avatar = userResults[0].avatar;
+            cb(null,item)
+          }
+        })
+      }, function(err, mapResults){
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
+    }],
     getCollections: function(callback){
       user.find({userId: req.session.user.userId}, function (err, userResults) {
         if(err){
@@ -276,6 +362,25 @@ router.get('/topic', function (req, res) {
         callback(null,topic_collections)
       })
     },
+    getCollectionsUserMsg: ['getCollections', function (results, callback) {
+      var collections = results.getCollections;
+      async.map(collections, function (item, cb) {
+        user.find({userId: item.user.id}, function (err, userResults) {
+          if(err){
+            cb(null, 'find err')
+          }else{
+            item.user.name = userResults[0].nickName;
+            cb(null, item)
+          }
+        })
+      }, function (err, mapResults) {
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
+    }],
     getSubTask: ['getTopic', function (results, callback) {
       if(results.getTopic.taskArr.length > 0){
         var taskArr = [];
@@ -297,7 +402,26 @@ router.get('/topic', function (req, res) {
       }else{
         callback(null)
       }
-
+    }],
+    getSubTaskOwnerMsg: ['getSubTask', function (results, callback) {
+      var subTasks = results.getSubTask;
+      async.map(subTasks, function (item, cb) {
+        user.find({userId: item.owner.id}, function (err, userResults) {
+          if(err){
+            cb(null, 'find err')
+          }else{
+            item.owner.name = userResults[0].nickName;
+            item.owner.avatar = userResults[0].avatar;
+            cb(null, item)
+          }
+        })
+      }, function (err, mapResults) {
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
     }]
   }, function (err, finalResults) {
     res.render('topic',{
@@ -349,8 +473,7 @@ router.post('/chat', function (req, res) {
               fileName: req.body.fileObj.fileName,
               source: req.body.fileObj.source,
               uploader:{
-                id: req.session.user.userId,
-                name: req.session.user.nickName
+                id: req.session.user.userId
               }
             });
             topicResults[0].markModified('files');
@@ -365,8 +488,7 @@ router.post('/chat', function (req, res) {
                   success: true,
                   file_id: saveResult.files[saveResult.files.length-1]._id,
                   uploader:{
-                    id: req.session.user.userId,
-                    name: req.session.user.nickName
+                    id: req.session.user.userId
                   }
                 })
               }
@@ -402,8 +524,7 @@ router.post('/chat', function (req, res) {
              },
              msg_type: 4,
              from:{
-               id: req.session.user.userId,
-               name: req.session.user.nickName
+               id: req.session.user.userId
              },
              id: userResults[0].notification.length+1
            });
@@ -418,8 +539,7 @@ router.post('/chat', function (req, res) {
                 callback(null,{
                   m_code:1,
                   user: {
-                    userId: saveResult.userId,
-                    userName: saveResult.nickName
+                    userId: saveResult.userId
                   }
                 });
               }
@@ -448,7 +568,7 @@ router.post('/chat', function (req, res) {
               //列表中有此人
               current_topic.atwho[j].from.push({
                 userId: req.session.user.userId,
-                userName: req.session.user.nickName,
+                //userName: req.session.user.nickName,
                 chatItemId: results.saveChat.chatItemId
               });
               break;
@@ -459,10 +579,10 @@ router.post('/chat', function (req, res) {
             //说明数组遍历完，没有找到被at的用户
             current_topic.atwho.push({
               userId: results.getAtWhoAndNoti.user.userId,
-              userName: results.getAtWhoAndNoti.user.userName,
+              //userName: results.getAtWhoAndNoti.user.userName,
               from:[{
                 userId: req.session.user.userId,
-                userName: req.session.user.nickName,
+                //userName: req.session.user.nickName,
                 chatItemId: results.saveChat.chatItemId
               }]
             })
@@ -482,10 +602,10 @@ router.post('/chat', function (req, res) {
           //console.log('kongkongkongkong results.saveChat.chatItemId',results.saveChat.chatItemId)
           current_topic.atwho.push({
             userId: results.getAtWhoAndNoti.user.userId,
-            userName: results.getAtWhoAndNoti.user.userName,
+            //userName: results.getAtWhoAndNoti.user.userName,
             from:[{
               userId: req.session.user.userId,
-              userName: req.session.user.nickName,
+              //userName: req.session.user.nickName,
               chatItemId: results.saveChat.chatItemId
             }]
           });
@@ -517,7 +637,6 @@ router.post('/chat', function (req, res) {
         if(err){return console.error(err)}
         var publicChat = {
           chatItemId: chatCollResults[0].chatItem.length + 1,
-
           user:{
             id: userId,
             name: userName,
@@ -538,12 +657,12 @@ router.post('/chat', function (req, res) {
                   chatItemId: chatCollResults[0].chatItem.length + 1,
                   atwho:{
                     userId: userResults[0].userId,
-                    userName: userResults[0].nickName
+                    //userName: userResults[0].nickName
                   },
                   user:{
                     id: userId,
-                    name: userName,
-                    avatar: req.session.user.avatar
+                    //name: userName,
+                    //avatar: req.session.user.avatar
                   },
                   chatContent: chatContent,
                   chat_type: req.body.chat_type
@@ -570,8 +689,8 @@ router.post('/chat', function (req, res) {
               fileName: req.body.fileObj.fileName,
               user:{
                 id: userId,
-                name: userName,
-                avatar: req.session.user.avatar
+                //name: userName,
+                //avatar: req.session.user.avatar
               },
               chatContent: chatContent,
               chat_type: req.body.chat_type
@@ -581,8 +700,8 @@ router.post('/chat', function (req, res) {
               chatItemId: chatCollResults[0].chatItem.length + 1,
               user:{
                 id: userId,
-                name: userName,
-                avatar: req.session.user.avatar
+                //name: userName,
+                //avatar: req.session.user.avatar
               },
               chatContent: chatContent,
               chat_type: req.body.chat_type
@@ -651,7 +770,7 @@ router.post('/chat', function (req, res) {
 
 // 对某个评论点赞
 router.post("/chat/agree", function (req, res) {
-  //console.log(req.body)
+  console.log('body',req.body)
   async.auto({
     getUserName: function (callback) {
       callback(null, req.session.user.nickName)
@@ -663,6 +782,7 @@ router.post("/chat/agree", function (req, res) {
           return console.error(err)}
         var chats = chatResults[0].chatItem;
         var j;
+        var agree_sum;
         for(j=0;j<chats.length;j++){
           if(chats[j].chatItemId == req.body.chatItemId){
             var chatOwner = chats[j].user;
@@ -670,19 +790,27 @@ router.post("/chat/agree", function (req, res) {
             chats[j].agree.push({
               user:{
                 id: req.body.userId,
-                name: results.getUserName,
-                avatar: req.session.user.avatar
+                //name: results.getUserName,
+                //avatar: req.session.user.avatar
               },
               agreeId:chats[j].agree.length+1
             });
+            agree_sum = chats[j].agree.length;
+            console.log('server',agree_sum)
             break;
           }
         }
         chatResults[0].markModified('chatItem');
         chatResults[0].save(function (err, results) {
           //console.log('save success', results)
+          callback(null,{
+            chatOwner:chatOwner,
+            chatContent:chatContent,
+            agree_sum: agree_sum
+
+          })
         });
-        callback(null,{chatOwner:chatOwner,chatContent:chatContent})
+
       })
     }],
     sendNotification: ['getUserName', 'saveAgree',function (results, callback) {
@@ -711,12 +839,13 @@ router.post("/chat/agree", function (req, res) {
       })
     }]
   }, function (err, finalResults) {
-    //console.log('agree',finalResults)
+    console.log('agree',finalResults)
     if(finalResults.sendNotification == 'true'){
       res.send({
         success:true,
         from: req.session.user.userId,
-        to: finalResults.saveAgree.chatOwner.id
+        to: finalResults.saveAgree.chatOwner.id,
+        agree_sum: finalResults.saveAgree.agree_sum
       })
     }else{
       res.send({
@@ -764,7 +893,8 @@ router.post('/chat/disagree', function(req, res){
                   return console.error(err)
                 }else{
                   callback(null,{
-                    success: true
+                    success: true,
+                    agree_sum: chats[i].agree.length
                   })
                 }
               })
@@ -793,7 +923,8 @@ router.post('/chat/disagree', function(req, res){
     }else{
       if(finalResults.updateChatItem.success){
         res.send({
-          success: true
+          success: true,
+          agree_sum: finalResults.updateChatItem.agree_sum
         })
       }else{
         res.send({
@@ -848,6 +979,7 @@ router.post("/chat/collect/file", function (req, res) {
     }
   })
 });
+
 
 router.post("/chat/delete/file", function (req, res) {
   async.auto({
@@ -933,8 +1065,8 @@ router.post("/chat/collect", function(req, res){
                 collectId: chatResults[0].chatItem[j].collect.length +1,
                 user:{
                   id: req.session.user.userId,
-                  name: req.session.user.nickName,
-                  avatar: req.session.user.avatar
+                  //name: req.session.user.nickName,
+                  //avatar: req.session.user.avatar
                 }
               });
               chatResults[0].chatItem[j].markModified('collect');
@@ -952,6 +1084,15 @@ router.post("/chat/collect", function(req, res){
         }
       })
     },
+    getChatItemOwner: ['getChatItemContent', function (results, callback) {
+      user.find({userId: results.getChatItemContent.user.id}, function (err, userResults) {
+        if(err){
+          callback(null,'find err')
+        }else{
+          callback(null, userResults[0])
+        }
+      })
+    }],
     checkUser: ['getChatItemContent',function (results,callback) {
       //检查是不是该话题的主人
       console.log('chatItem', results.getChatItemContent)
@@ -965,8 +1106,8 @@ router.post("/chat/collect", function(req, res){
             chatContent: results.getChatItemContent.chatContent,
             user:{
               id: results.getChatItemContent.user.id,
-              name: results.getChatItemContent.user.name,
-              avatar: results.getChatItemContent.user.avatar
+              //name: results.getChatItemContent.user.name,
+              //avatar: results.getChatItemContent.user.avatar
             },
             createAt: results.getChatItemContent.createAt
           });
@@ -991,8 +1132,8 @@ router.post("/chat/collect", function(req, res){
               chatContent:results.getChatItemContent.chatContent,
               user:{
                 id: results.getChatItemContent.user.id,
-                name: results.getChatItemContent.user.name,
-                avatar: results.getChatItemContent.user.avatar
+                //name: results.getChatItemContent.user.name,
+                //avatar: results.getChatItemContent.user.avatar
               },
               createAt: results.getChatItemContent.createAt
             });
@@ -1022,8 +1163,8 @@ router.post("/chat/collect", function(req, res){
               fileName: req.body.fileName,
               user:{
                 id: results.getChatItemContent.user.id,
-                name: results.getChatItemContent.user.name,
-                avatar: results.getChatItemContent.user.avatar
+                //name: results.getChatItemContent.user.name,
+                //avatar: results.getChatItemContent.user.avatar
               },
               createAt: results.getChatItemContent.createAt
             });
@@ -1043,7 +1184,7 @@ router.post("/chat/collect", function(req, res){
       })
     }]
   }, function (err, finalResults) {
-    //console.log('finalResults', finalResults)
+    console.log('collect finalResults', finalResults.getChatItemOwner)
     if(err){
       return res.send({
         success:false
@@ -1052,6 +1193,7 @@ router.post("/chat/collect", function(req, res){
     res.send({
       success:true,
       summary: finalResults.checkUser,
+      chatItemOwner: finalResults.getChatItemOwner,
       chatItemId: finalResults.getChatItemContent.chatItemId
     })
   })
@@ -1234,6 +1376,109 @@ router.post('/chat/discollect', function (req, res) {
             msg:'更新失败'
           })
         }
+      }
+    }
+  })
+});
+//回复
+//回复这个功能，要发送通知，并且将回复存到这个这个item里面
+router.post('/chat/reply', function (req, res) {
+  console.log('user', req.body.userId)
+  async.auto({
+    saveReply: function (callback) {
+      chat.find({chatRecordId: req.body.chatRecordId}, function (err, chatResults) {
+        if(err){
+          callback(null,{
+            success: false,
+            errMsg: '数据库错误'
+          })
+          console.error(err)
+        }else{
+          async.map(chatResults[0].chatItem, function (item, cb) {
+            if(item.chatItemId == req.body.chatItemId){
+              item.reply.push({
+                replyId: item.reply.length + 1,
+                user: {
+                  id: req.body.userId
+                },
+                replyContent: req.body.replyContent
+              })
+            }
+            cb(null)
+          }, function (err, mapResults) {
+            if(err){
+              console.error(err)
+              callback(null,{
+                success: false,
+                errMsg: 'map err'
+              })
+            }else{
+              chatResults[0].markModified('chatItem');
+              chatResults[0].save(function (err, saveResult) {
+                //console.log('save', saveResult)
+                if(err){
+                  callback(null,{
+                    success: false,
+                    errMsg: '保存失败'
+                  })
+                }else{
+                  callback(null,{
+                    success: true
+                  })
+                }
+              })
+
+            }
+          })
+        }
+      })
+    },
+    sendNotification:['saveReply', function (results, callback) {
+      if(results.saveReply.success){
+        user.find({userId: req.body.r_userId}, function (err, userResults) {
+          if(err){
+            console.error(err)
+            callback(null,{
+              success: false,
+              erMsg: '无此用户'
+            })
+          }else{
+            userResults[0].notification.push({
+              msg_type: 9,
+              id: userResults[0].notification.length +1,
+              from: {
+                id:req.body.userId
+              },
+              chatRecord:{
+                chatRecordId:req.body.chatRecordId,
+                chatItemId: req.body.chatItemId
+              },
+              replyContent: req.body.replyContent,
+              topic:{
+                id:req.body.topicId,
+                title: req.body.topicTitle
+              }
+            })
+            userResults[0].markModified('notification');
+            userResults[0].save(function (err, results) {
+              if(err){
+                callback(null,'err')
+                return console.error(err)
+              }
+              callback(null,'true')
+            })
+          }
+        })
+      }
+    }]
+  }, function(err, finalResults){
+    if(err){
+      res.redirect('404Page')
+    }else{
+      if(finalResults.saveReply.success){
+        res.send({
+          success: true
+        })
       }
     }
   })
@@ -1445,6 +1690,9 @@ router.post("/delete/topic", function (req, res) {
     }
   })
 });
+
+
+
 //获取聊天记录
 router.post("/mousewheel/chat", function (req, res) {
   console.log('get history data')
@@ -1452,7 +1700,7 @@ router.post("/mousewheel/chat", function (req, res) {
   var chatRecordId = req.body.chatRecordId;
   var chatCount = req.body.chatCount;
   async.auto({
-    getHistChat: function (callback) {
+    getHisChat: function (callback) {
       //获取历史聊天记录
       if(req.body.summary == 'false'){
         //获取之前的聊天信息，用在摘要部分和聊天框部分
@@ -1497,7 +1745,65 @@ router.post("/mousewheel/chat", function (req, res) {
         callback(null)
       }
     },
-    getSummayPartChat:function(callback){
+    getHistChatUserMsg: ['getHisChat', function (results, callback) {
+      console.log('results   ', results.getHisChat);
+      if(results.getHisChat){
+        async.map(results.getHisChat.arr, function (item, cb) {
+          if(item.reply.length > 0){
+            //说明此条发言有评论，那么要去得到reply的user信息
+            //console.log('item reply', item.reply)
+            async.map(item.reply, function (r_item, r_cb) {
+              user.find({userId: r_item.user.id}, function (r_err, r_userResults) {
+                if(r_err){
+                  console.error(r_err)
+                  r_cb(null,'err')
+                }else{
+                  r_item.user.name = r_userResults[0].nickName;
+                  r_item.user.avatar = r_userResults[0].avatar;
+                  r_cb(null)
+                }
+              })
+            }, function (err, r_m_results) {
+              if(err){
+                console.error(err)
+              }
+            })
+            //得到本条评论的userMsg
+            user.find({userId: item.user.id}, function (err, userResults) {
+              if(err){
+                cb(null, 'find err')
+              }else{
+                item.user.avatar = userResults[0].avatar;
+                item.user.name = userResults[0].nickName;
+                cb(null, item)
+              }
+            })
+          }else{
+            user.find({userId: item.user.id}, function (err, userResults) {
+              if(err){
+                cb(null, 'find err')
+              }else{
+                item.user.avatar = userResults[0].avatar;
+                item.user.name = userResults[0].nickName;
+                cb(null, item)
+              }
+            })
+          }
+        }, function(err, mapResults){
+          if(err){
+            callback(null,{
+              success: false,
+              errMsg: 'map err'
+            })
+          }else{
+            callback(null)
+          }
+        })
+      }else{
+        callback(null)
+      }
+    }],
+    getSummaryPartChat:function(callback){
       //获取摘要的上下文（聊天记录）
       if(req.body.summary =='true'){
         chat.find({chatRecordId: chatRecordId}, function (err, chatResults) {
@@ -1512,18 +1818,42 @@ router.post("/mousewheel/chat", function (req, res) {
           }
           var arr=chatItem.slice(i,i+5);
           console.log('上下文',i,i+5)
-          callback(null,{
-            chatRecordId: chatRecordId,
-            summaryArr: arr,
-            chatItemId: chatItemId
-          })
+          callback(null,arr)
         })
       }else{
         callback(null)
       }
-    }
+    },
+    getSummaryPartChatUserMsg: ['getSummaryPartChat', function (results, callback) {
+      //console.log('results', results)
+      if(results.getSummaryPartChat){
+        async.map(results.getSummaryPartChat, function (item, cb) {
+          user.find({userId: item.user.id}, function (err, userResults) {
+            console.log('user', userResults)
+            if(err){
+              cb(null,'find err')
+            }else{
+              //如果schema里没有这两个字段就不会成功，搞不懂
+              item.user.avatar = userResults[0].avatar;
+              item.user.name = userResults[0].nickName;
+              //console.log('item', item)
+              cb(null, item)
+            }
+          })
+        }, function (err, mapResults) {
+          if(err){
+            callback(null,'map err')
+          }else{
+            //console.log('map results', mapResults)
+            callback(null)
+          }
+        })
+      }else{
+        callback(null)
+      }
+
+    }]
   }, function (err, finalResults) {
-    console.log('get hischat finalResults', finalResults)
     if(err){
       return res.send({
         success:false
@@ -1532,15 +1862,15 @@ router.post("/mousewheel/chat", function (req, res) {
       if(req.body.summary =='false'){
         return res.send({
           success:true,
-          hisChat: finalResults.getHistChat.arr,
+          hisChat: finalResults.getHisChat.arr,
           chatRecordId: chatRecordId
         })
       }else{
         return res.send({
           success:true,
           chatRecordId: chatRecordId,
-          summaryChat: finalResults.getSummayPartChat.summaryArr,
-          chatItemId: finalResults.getSummayPartChat.chatItemId
+          summaryChat: finalResults.getSummaryPartChat,
+          chatItemId: chatItemId
         })
       }
     }

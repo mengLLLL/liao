@@ -1,0 +1,103 @@
+extends ../layout-back
+block content
+	section.content-header
+		h4 用户：#{user.nickName}
+	section.content
+		.row
+			.col-xs-12
+				.box
+					.box-header
+						h5  所有团队
+					.box-body
+						- console.log('team', teams)
+						if teams.length > 0
+							table#teams.table.table-bordered.table-striped.dataTable
+								thead
+									tr
+										th 团队ID
+										th 团队名称
+										th 管理者
+										th 创立时间
+										th 详情
+								tbody
+									each item in teams
+										tr
+											td #{item.teamId}
+											td #{item.name}
+											td #{item.manager.name}
+											td #{moment(item.createAt).format('YYYY.MM.DD')}
+											td
+												a(href="/admin/team?teamId=" + item.teamId) 查看
+						else
+							p 暂无团队
+
+				.box
+					.box-header
+						h5  所有话题
+					.box-body
+						if topics.length > 0
+							table#topics.table.table-bordered.table-striped.dataTable
+								thead
+									tr
+										th 话题ID
+										th 话题名称
+										th 话题简介
+										th 创建时间
+										th 截止时间
+										th 话题状态
+										th 是否为管理员
+								tbody
+									each item in topics
+										tr
+											td #{item.topicId}
+											td #{item.title}
+											td #{item.brief}
+											td #{moment(item.createAt).format('YYYY.MM.DD')}
+											td #{moment(item.endAt).format('YYYY.MM.DD')}
+											case item.condition
+												when 0
+													td 正在进行
+												when 1
+													td 已结束
+												when 2
+													td 已逾期
+											if item.owner.id == user.userId
+												td 是
+											else
+												td 否
+						else
+							p  暂无话题
+
+				.box
+					.box-header
+						h5 所有任务
+					.box-body
+						if tasks.length > 0
+							table#tasks.table.table-bordered.table-striped.dataTable
+								thead
+									tr
+										th 任务简介
+										th 创建者
+										th 创建时间
+										th 截止时间
+										th 状态
+										th 所属主任务
+								tbody
+									each item in tasks
+										tr
+											td #{item.taskNode.brief}
+											td #{item.taskNode.creater.name}
+											td #{moment(item.taskNode.createAt).format('YYYY.MM.DD')}
+											td #{moment(item.taskNode.endAt).format('YYYY.MM.DD')}
+											case item.taskNode.condition
+												when 0
+													td 正在进行
+												when 1
+													td 已完成
+												when 2
+													td 已逾期
+											td #{item.taskMsg.brief}
+						else
+							p 暂无任务
+
+

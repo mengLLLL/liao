@@ -8,7 +8,7 @@ block content
 				.setting-header
 					.header-tab(data-type='0').active 账号设置
 					.header-tab(data-type='1') 个人资料
-					.header-tab(data-type='3') 邀请同事
+					.header-tab(data-type='3') 邀请新成员
 			.part(id='0').show
 				.item
 					.item-box
@@ -52,8 +52,15 @@ block content
 								button.edit-btn 修改密码
 						.sub-box
 							div
-								input.self-input(placeholder='请输入密码' name='newpassword1' type='password')
-								input.self-input(placeholder='请再次输入密码' name='newpassword2' type='password')
+								div
+									input.self-input(placeholder='请输入原来的密码' name='oldpassword' type='password')
+									i.fa.fa-eye.psd-condition
+								div
+									input.self-input(placeholder='请输入密码' name='newpassword1' type='password')
+									i.fa.fa-eye.psd-condition
+								div
+									input.self-input(placeholder='请再次输入密码' name='newpassword2' type='password')
+									i.fa.fa-eye.psd-condition
 							.edit-part
 								button#changePsd 确认修改
 			.part(id='1')
@@ -132,7 +139,6 @@ block content
 				.item
 					.item-box
 						label 邮箱地址
-						p 修改邮箱时liao会发送一封邮件到新的邮箱地址，请点击邮箱中的链接重置你的邮箱
 					.item-box
 						.sub-box
 							if user.email !== ""
@@ -173,12 +179,15 @@ block content
 						label 链接
 						p 请复制链接发给要邀请的人即可
 					.item-box
-						input.input-a(value='http://www.zhengxinsen.com/invest?tag=0&teamId='+session.team.teamId)
+						input.input-a#investCode(value='http://pai.ihangwei.com/invest?tag=0&teamId='+session.team.teamId)
+						button#copyInvestCode(data-clipboard-target='investCode') 点击复制
+
 	script(src="/socket.io/socket.io.js")
 	script(src="/script/sweetalert.min.js")
 	script(src="/script/file/lib/crypto1/crypto/crypto.js")
 	script(src="/script/file/lib/crypto1/hmac/hmac.js")
 	script(src="/script/file/lib/crypto1/sha1/sha1.js")
 	script(src="/script/file/lib/base64.js")
+	script(src="/script/ZeroClipboard.js")
 	script(src="/script/usersetting.js")
 	script(src="/script/file-upload-avatar.js")

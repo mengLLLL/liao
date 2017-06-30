@@ -1,0 +1,18 @@
+.center{
+     margin: 50px auto 0;
+    background: #fff;
+    padding:20px;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+.header{
+    margin-bottom: 30px;
+}
+.header h3{
+    border-bottom: 1px solid #3c3c3c;
+    padding-bottom: 15px;
+}

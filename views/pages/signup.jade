@@ -7,12 +7,18 @@ block content
 			form.form-middle(role="form")
 				.form-group
 					label.fa.fa-user
-					input(type="text",name="phone",placeholder="请输入手机号码")
+					input(type="text",name="phone",placeholder="请输入昵称")
 				if loginName
 					div.error #{loginName}
 				.form-group
 					label.fa.fa-lock
 					input(type="password", name="password",placeholder="请输入密码，不少于6位")
+					i.fa.fa-eye.psd-condition
+				.form-group
+					label.fa.fa-lock
+					input(type="password", name="password2",placeholder="再次输入密码")
+					i.fa.fa-eye.psd-condition
+
 				button.btn.login-btn#signup 注 册&nbsp;
 					i.icon.fa.fa-sign-in
 				div.log-tips 已有账号？

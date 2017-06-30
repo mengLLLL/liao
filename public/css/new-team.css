@@ -67,5 +67,9 @@ button[disabled]{
     position: absolute;
     top:-35px;
     left:15px;
-    color: white;
+    color: white !important;
+}
+.search-results{
+    text-align: left;
+    margin-top: 10px;
 }

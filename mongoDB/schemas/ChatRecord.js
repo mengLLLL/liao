@@ -18,11 +18,8 @@ var ChatRecordSchema = new mongoose.Schema({
     },
     user:{
       id: Number,
-      name: String,
-      avatar:{
-        default:'http://donew.oss-cn-hangzhou.aliyuncs.com/liao/topic/1/2017-01-03/IMG_5426.JPG',
-        type:String
-      }
+      avatar: String,
+      name: String
     },
     reply:[{
       replyId: Number,
@@ -31,6 +28,7 @@ var ChatRecordSchema = new mongoose.Schema({
         name: String,
         avatar: String
       },
+      replyContent: String,
       createAt:{
         type:Date,
         default:Date.now()

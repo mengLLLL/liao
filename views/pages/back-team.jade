@@ -1,0 +1,107 @@
+extends ../layout-back
+block content
+	section.content-header
+		h4 团队: #{team.name}
+	section.content
+		.row
+			.col-xs-12
+				.box
+					.box-header
+						h5 所有成员
+					.box-body
+						if members.length > 0
+							table#members.table.table-striped.table-bordered.dataTable
+								thead
+									tr
+										th 用户ID
+										th 昵称
+										th 真实姓名
+										th 电话号码
+										th 邮箱
+										th 微信
+										th 详情
+								tbody
+									each item in members
+										tr
+											td #{item.userId}
+											td #{item.nickName}
+											td #{item.realName.name}
+											td #{item.phoneNumber}
+											td #{item.email}
+											td #{item.wechat}
+											td
+												a(href="/admin/user?userId=" + item.userId) 查看
+						else
+							p 暂无成员
+				.box
+					.box-header
+						h5 所有话题
+					.box-body
+						if topics.length > 0
+							table#topics.table.table-bordered.table-striped.dataTable
+								thead
+									tr
+										th 话题ID
+										th 话题名称
+										th 话题简介
+										th 创建者
+										th 创建时间
+										th 结束时间
+										th 状态
+								tbody
+									each item in topics
+										tr
+											td #{item.topic.topicId}
+											td #{item.topic.title}
+											td #{item.topic.brief}
+											td #{item.owner.nickName}
+											td #{moment(item.topic.createAt).format('YYYY.MM.DD')}
+											td #{moment(item.topic.endAt).format('YYYY.MM.DD')}
+											case item.topic.condition
+												when 0
+													td 进行中
+												when 1
+													td 已结束
+												when 2
+													td 已逾期
+						else
+							p  暂无话题
+
+				.box
+					.box-header
+						h5 所有任务
+					.box-body
+						if tasks.length > 0
+							table#tasks.table.table-bordered.table-striped.dataTable
+								thead
+									tr
+										td 任务ID
+										td 任务标题
+										td 任务简介
+										td 创建者
+										td 创建时间
+										td 截止时间
+										td 进度
+										td 状态
+								tbody
+									each item in tasks
+										tr
+											td #{item.task.taskId}
+											td #{item.task.title}
+											td #{item.task.brief}
+											td #{item.owner.nickName}
+											td #{moment(item.task.createAt).format('YYYY.MM.DD')}
+											td #{moment(item.task.endAt).format('YYYY.MM.DD')}
+											td
+												.progress.progress-sx
+													.progress-bar.progress-bar-green(style="width:#{item.task.statistics.percent}%") #{item.task.statistics.percent}%
+											case item.task.condition
+												when 0
+													td 进行中
+												when 1
+													td 已结束
+												when 2
+													td 已逾期
+						else
+							p 暂无任务
+

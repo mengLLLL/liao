@@ -179,12 +179,20 @@ function uploadFile(obj, type) {
             if(data.success){
               console.log('data',data)
               console.log("文件已经保存")
-              swal("上传成功");
               if(file_type == 1){
                 $('#taskFileCenter .file-box').append("<div class='file-item' id='" + data.file.files[data.file.files.length-1]._id+"' " +
                   "data-src='" +data.file.files[data.file.files.length-1].source+"' data-filetype='"+file_type+
                   "' data-upuserid='"+ data.file.files[data.file.files.length-1].uploader.id+
-                  "' data-upusername='" +data.file.files[data.file.files.length-1].uploader.name+"'>" +fileObj.fileName+
+                  "' data-upusername='" +data.file.files[data.file.files.length-1].uploader.name+"'><span>" +fileObj.fileName+
+                  "</span><i class='fa fa-star-o collectFile'></i>" +
+                  "<i class='fa fa-trash deleteFile'></i>"+
+                  "</div>")
+              }else{
+                $('#taskFileCenter .file-box').append("<div class='file-item' id='" + data.file.files[data.file.files.length-1]._id+"' " +
+                  "data-filetype='"+file_type+
+                  "' data-upuserid='"+ data.file.files[data.file.files.length-1].uploader.id+
+                  "' data-upusername='" +data.file.files[data.file.files.length-1].uploader.name+"'>" +
+                  "<a href='"+data.file.files[data.file.files.length-1].source+"'>" +fileObj.fileName+ "<span class='fa fa-download'></span></a>"+
                   "<i class='fa fa-star-o collectFile'></i>" +
                   "<i class='fa fa-trash deleteFile'></i>"+
                   "</div>")

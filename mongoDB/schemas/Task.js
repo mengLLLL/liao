@@ -7,7 +7,7 @@ var TaskSchema = new mongoose.Schema({
   owner: {
     id: Number,
     name: String,
-    avatar: String
+    //avatar: String
   },
   brief: String,
   endAt: Date,
@@ -15,10 +15,14 @@ var TaskSchema = new mongoose.Schema({
   teamId: Number,
   members:[{
     userId:Number,
-    name: String
+    //name: String
   }],
   topicId: Number,
   taskArr: [{
+    createAt:{
+      type:Date,
+      default: Date.now()
+    },
     taskItemId: Number,
     creater:{
       userId: Number,

@@ -10,3 +10,12 @@
     width:-moz-calc(100% - 10px);
     width:calc(100% - 10px);
     ```
+
+    
+* css自定标准
+    - 按钮
+    ```
+    button{
+        padding: 6px 12px;
+    }    
+    ```

@@ -1,0 +1,72 @@
+doctype html
+html(style='height: auto')
+	head
+		title 后台
+		meta(charset="utf-8")
+		meta(http-quuiv='X-UA-compatible' content='IE=edge')
+		meta(content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no', name='viewport')
+		link(rel='stylesheet', href='/css/lib/css/bootstrap.min.css')
+		link(rel='stylesheet', href='/css/lib/css/font-awesome.min.css')
+		link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css')
+		link(rel='stylesheet', href='/css/AdminLTE.min.css')
+		link(rel='stylesheet', href='/css/_all-skins.min.css')
+		link(rel='stylesheet', href='/css/pace.css')
+		link(rel='stylesheet', href='/css/dataTables.bootstrap.css')
+		link(href="/css/sweetalert.css", rel="stylesheet")
+		link(rel='stylesheet', href='/css/backstage.css')
+		block style
+	body.skin-black.sidebar-mini(style='height: auto')
+		.wrapper(style='height:auto')
+			header.main-header
+				a.logo(href="#")
+					span.logo-mini
+						b PAI
+					span.logo-lg
+						b pai后台系统
+				nav.navbar.navbar-static-top(role='navigation')
+					a.sidebar-toggle(href="#",data-toggle="offcanvas",role='button')
+						span.sr-only Toggle navigation
+					.navbar-custom-menu
+						ul.nav.navbar-nav
+							li.dropdown.user.user-menu
+			aside.main-sidebar
+				section.sidebar
+					.user-panel
+					form.sidebar-form(action='#', method='get')
+						.input-group
+							input.form-control(type='text', name='q', placeholder='搜索用户...')
+							span.input-group-btn
+								button#search-btn.btn.btn-flat(type='submit', name='search')
+									i.fa.fa-search
+					ul.sidebar-menu
+						li
+							a(href='/backstage')
+								i.fa.fa-link
+								span 用户管理
+
+						li
+							a(href='/backstage/team')
+								i.fa.fa-link
+								span 团队管理
+			.content-wrapper
+				block content
+			footer.main-footer
+				.pull-right.hidden-xs pai后台系统
+				strong Copyright © 2017
+					a(href='#') Company
+					| .
+				| All rights reserved.
+			script(src='/jquery/dist/jquery.min.js')
+			script(src="/moment/min/moment.min.js")
+			script(src='/script/bootstrap.min.js')
+			script(src='/script/jquery.dataTables.js')
+			script(src='/script/dataTables.bootstrap.min.js')
+			script(src='/script/jquery.slimscroll.min.js')
+			script(src='/script/fastclick.min.js')
+			script(src='/script/app.min.js')
+			script(src='/script/pace.min.js')
+			script(src="/script/sweetalert.min.js")
+			script(src='/script/backstage.js')
+
+
+

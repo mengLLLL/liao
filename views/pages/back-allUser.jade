@@ -1,0 +1,39 @@
+extends ../layout-back
+block content
+	section.content-header
+		h1 所有用户
+	section.content
+		.row
+			.col-xs-12
+				.box
+					.box-body
+						table#userTable.table.table-bordered.table-striped.dataTable
+							thead
+								tr
+									th 用户ID
+									th 用户名
+									th 真实姓名
+									th 微信
+									th 电话号码
+									th 邮箱
+									th 编辑
+									th 详情
+							tbody
+								each item in users
+									tr(role='row')
+										td #{item.userId}
+										td
+											input(value= item.nickName == null || item.nickName == "" ? "" : "#{item.nickName}" readOnly=true name="nickName")
+										td
+											input(value=item.realName.name == null || item.realName.name == "" ? "" : "#{item.realName.name}" readOnly=true name="realName")
+										td
+											input(value=item.wechat == null || item.wechat == "" ? "" : "#{item.wechat}" readOnly=true name="wechat")
+										td
+											input(value=item.phoneNumber == null || item.phoneNumber == "" ? "" : "#{item.phoneNumber}" readOnly=true name="phoneNumber")
+										td
+											input(value=item.email == null || item.email == "" ? "" : "#{item.email}" readOnly=true name="email")
+										td
+											button.edit-user.edit-btn.btn.btn-default 修改
+											button.edit-btn.btn.btn-default.edit-confirm.editConfirmUser(data-userid="#{item.userId}") 确认
+										td
+											a(href="/admin/user?userId=" + item.userId) 查看

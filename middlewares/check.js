@@ -8,5 +8,11 @@ module.exports = {
       return res.redirect('/login');
     }
     next();
+  },
+  checkAdmin: function checkAdmin(req, res, next) {
+    if(req.session.user.nickName !== "admin_"){
+      return res.redirect('/liao')
+    }
+    next();
   }
 };

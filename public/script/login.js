@@ -15,8 +15,12 @@ $('#login').click(function (e) {
     success: function (data) {
       if(data.success){
         console.log(data);
-
-        return window.location.href="/liao";
+        if(data.userType == '0'){
+          console.log('if')
+          window.location.href="/backstage";
+        }else{
+          window.location.href="/liao";
+        }
       }else{
         //falseType 1 说明登录的时候没有团队，所以去创建
         if(data.falseType == 1){

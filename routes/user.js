@@ -10,6 +10,8 @@ var topic = require('../mongoDB/models/topic.js');
 var task = require('../mongoDB/models/task.js');
 var async = require('async');
 var moment = require('moment')
+var _ = require("lodash");
+var captchapng = require('captchapng');
 
 router.get('/invest', function (req, res) {
   res.render('invested',{
@@ -297,6 +299,57 @@ router.post('/signup', function (req, res) {
   })
 });
 
+//新注册用户完善个人信息
+router.get('/complete', function(req, res){
+  res.render('complete-msg')
+});
+router.post('/complete', function (req, res) {
+  user.find({userId: req.session.user.userId}, function (err, userResults) {
+    if(err){
+      res.send({
+        success: false,
+        errMsg:"出错！"
+      })
+    }else{
+      userResults[0].realName.name = req.body.realName;
+      userResults[0].markModified('realName');
+      if(req.body.phoneNumber !== ""){
+        userResults[0].phoneNumber = req.body.phoneNumber;
+        userResults[0].markModified('phoneNumber');
+      }
+      if(req.body.email !== ""){
+        userResults[0].email = req.body.email;
+        userResults[0].markModified('email');
+      }
+      if(req.body.wechat !== ""){
+        userResults[0].wechat = req.body.wechat;
+        userResults[0].markModified('wechat');
+      }
+      if(req.body.department !== ""){
+        userResults[0].department = req.body.department;
+        userResults[0].markModified('department');
+      }
+      if(req.body.job !== ""){
+        userResults[0].job = req.body.job;
+        userResults[0].markModified('job');
+      }
+      userResults[0].save(function (err, saveResult) {
+        if(err){
+          res.send({
+            success: false,
+            errMsg: '保存失败'
+          })
+        }else{
+          res.send({
+            success: true
+          })
+        }
+      })
+    }
+  })
+})
+
+
 //登录
 router.get('/login', function (req, res) {
   console.log('login')
@@ -312,7 +365,7 @@ router.post('/login', function (req, res) {
   };
 
   user.find({nickName:userObj.nickName}, function (err, results) {
-    console.log('user,', results);
+    //console.log('user,', results);
     if(err){
       return console.error(err);
     }
@@ -330,44 +383,52 @@ router.post('/login', function (req, res) {
         nickName: results[0].nickName,
         avatar: results[0].avatar
       };
-
-      if(results[0].teams.length == 0){
+      if(req.body.nickName == "admin_"){
+        //管理员登陆
         return res.send({
-          success:false,
-          falseType: 1,
-          userId: results[0].userId
+          success: true,
+          userType: '0'
         })
-      }
-      async.auto({
-        getTeamId: function (callback) {
-          var f_user;
-          user.find({userId: results[0].userId}, function (err,UserResults) {
-            UserResults[0].teams.forEach(function (obj, i, arr) {
-              if(obj.tag == true){
-                callback(null, obj.teamId)
-              }
-            });
+      }else{
+        //普通用户登陆
+        if(results[0].teams.length == 0){
+          return res.send({
+            success:false,
+            falseType: 1,
+            userId: results[0].userId
           })
-        },
-        getTeamName:['getTeamId', function (UserResults, callback) {
-          console.log('results', UserResults.getTeamId);
-          team.find({teamId: UserResults.getTeamId}, function (err, teamResults) {
-            callback(null, teamResults[0].name)
-          })
-        }]
-      }, function (err, finalResults){
+        }
+        async.auto({
+          getTeamId: function (callback) {
+            var f_user;
+            user.find({userId: results[0].userId}, function (err,UserResults) {
+              UserResults[0].teams.forEach(function (obj, i, arr) {
+                if(obj.tag == true){
+                  callback(null, obj.teamId)
+                }
+              });
+            })
+          },
+          getTeamName:['getTeamId', function (UserResults, callback) {
+            console.log('results', UserResults.getTeamId);
+            team.find({teamId: UserResults.getTeamId}, function (err, teamResults) {
+              callback(null, teamResults[0].name)
+            })
+          }]
+        }, function (err, finalResults){
 
-        //console.log('finalResults', finalResults)
-        req.session.team = {
-          teamName: finalResults.getTeamName,
-          teamId: finalResults.getTeamId
-        };
-        res.send({
-          success:true,
-          userId: results[0].userId
+          //console.log('finalResults', finalResults)
+          req.session.team = {
+            teamName: finalResults.getTeamName,
+            teamId: finalResults.getTeamId
+          };
+          res.send({
+            success:true,
+            userType: '1',
+            userId: results[0].userId
+          });
         });
-      });
-
+      }
     }else{
       req.flash('error','密码不正确');
       return res.send({
@@ -387,7 +448,7 @@ router.get('/new',  function (req, res) {
 });
 
 
-
+//消息中心
 router.get('/message/all', function (req, res) {
   var userId = req.session.user.userId;
   async.auto({
@@ -405,9 +466,8 @@ router.get('/message/all', function (req, res) {
           callback(null,'err')
         }else{
           userResults[0].notification.forEach(function (obj, i, arr) {
-            if(obj.read_tag == false){
+            if(obj.read_tag == false ){
               obj.read_tag = true;
-              obj.deal_tag = true;
             }
           });
           userResults[0].markModified('notification');
@@ -425,33 +485,106 @@ router.get('/message/all', function (req, res) {
     classify:['getNotificationArr', function (notiResults, callback) {
       //console.log('notifications', notifications);
       var notifications = notiResults.getNotificationArr;
-      console.log('notifications',notifications)
       var allNoti = {};
       var unreadNoti = [];
       var readNoti = [];
+      var unhandle = [];
       notifications.forEach(function (obj, i, arr) {
-        if(obj.read_tag == false){
-          unreadNoti.push(obj);
-        }else{
+        if(obj.deal_tag == false){
+          unhandle.push(obj)
+        }
+        if(obj.read_tag == true){
           readNoti.push(obj)
+        }else{
+          unreadNoti.push(obj)
         }
       });
       allNoti = {
         unreadNoti: unreadNoti,
-        readNoti: readNoti
+        readNoti: readNoti,
+        unhandle: unhandle
       };
       callback(null,allNoti)
+    }],
+    getNotiFromUserMsg: ['getNotificationArr', function (results, callback) {
+      var notifications = results.getNotificationArr;
+      async.map(notifications, function (item, cb) {
+        if(item.msg_type == 7 || item.msg_type == 5 || item.msg_type == 4 || item.msg_type == 6|| item.msg_type == 1 || item.msg_type == 9 || item.msg_type == 10 || item.msg_type == 11){
+          user.find({userId: item.from.id}, function (err, userResults) {
+            //console.log('userresut', userResults)
+            if(err){
+              cb(null, 'find err')
+            }else{
+              item.from.name = userResults[0].nickName;
+              item.from.avatar = userResults[0].avatar;
+              cb(null, item)
+            }
+          })
+        }
+        if(item.msg_type == 8){
+          async.map(item.task.users, function (uitem, ucb) {
+            user.find({userId: uitem.id}, function (err, userResults) {
+              if(err){
+                ucb(null,'find err')
+              }else{
+                uitem.name = userResults[0].nickName;
+                uitem.avatar = userResults[0].avatar;
+                ucb(null, uitem)
+              }
+            })
+          });
+          cb(null, item)
+        }
+      }, function (err, mapResults) {
+        if(err){
+          callback(null, 'map err')
+        }else{
+          callback(null)
+        }
+      })
+    }],
+    getTeamMsg:['getNotificationArr', function (results, callback) {
+      var notifications = results.getNotificationArr;
+      async.map(notifications, function(item, cb){
+        if(item.team.id){
+          console.log('item',item)
+          team.find({teamId: item.team.id}, function (err, teamResults) {
+            if(err){
+              cb(null,{
+                success: false,
+                errMsg: '数据库错误'
+              })
+            }else{
+              item.team.name = teamResults[0].name;
+              cb(null)
+            }
+          })
+        }else{
+          cb(null)
+        }
+      }, function (err, mapResults) {
+        console.log('map',mapResults)
+        if(err){
+          callback(null,{
+            success: false,
+            errMsg:'数据库错误'
+          })
+        }else{
+          callback(null)
+        }
+      })
     }]
   }, function (err, finalRes) {
-    //console.log('message', finalRes)
+    console.log('messagedddddddddd', finalRes)
     res.render('msgcenter',{
       notifications: finalRes.classify.unreadNoti,
-      hisNotifications: finalRes.classify.readNoti
+      hisNotifications: finalRes.classify.readNoti,
+      unhandleNoti: finalRes.classify.unhandle
     })
   });
 });
 
-
+//同意加入团队
 router.post('/agree', function (req, res) {
   if(req.body.aType == 1){
     console.log(req.body)
@@ -508,6 +641,41 @@ router.post('/agree', function (req, res) {
           callback(null,"true")
         })
       },
+      sendNotification: function (callback) {
+        user.find({userId: requestId}, function (err, userResults) {
+          if(err){
+            console.error(err)
+            callback(null,{
+              success: false,
+              errMsg:'数据库错误'
+            })
+          }else{
+            userResults[0].notification.push({
+              msg_type: 10,
+              id: userResults[0].notification.length +1,
+              from:{
+                id: userId
+              },
+              team:{
+                id: teamId
+              }
+            });
+            userResults[0].markModified('notification');
+            userResults[0].save(function (err, saveResult) {
+              if(err){
+                callback(null,{
+                  success: false,
+                  errMsg: '数据库错误'
+                })
+              }else{
+                callback(null,{
+                  success: true
+                })
+              }
+            })
+          }
+        })
+      },
       updateApplyUser: ['updateNotification', function (results, callback) {
         if(results.updateNotification){
           user.find({userId: requestId}, function (err, userResults) {
@@ -554,7 +722,6 @@ router.post('/agree', function (req, res) {
         }
       }]
     }, function (err, finalRes) {
-      console.log('notification Final', finalRes);
       res.send({
         success: true
       })
@@ -563,6 +730,92 @@ router.post('/agree', function (req, res) {
   }
 });
 
+
+//拒绝加入团队
+router.post("/disagree/team", function(req, res){
+  var teamId = req.body.teamId;
+  var userId = req.session.user.userId;
+  var notificationId = req.body.notificationId;
+  var requestId = req.body.requestId;
+  async.auto({
+    updateHostNoti: function (callback) {
+      user.find({userId: userId}, function (err, userResults) {
+        if(err){
+          console.error(err)
+          callback(null,{
+            success: false,
+            errMsg:'数据库错误'
+          })
+        }else{
+          for(var i = 0; i< userResults[0].notification.length; i++){
+            if(userResults[0].notification[i].id == notificationId){
+              userResults[0].notification[i].read_tag = true;
+              userResults[0].notification[i].deal_tag = true;
+              userResults[0].markModified('read_tag');
+              userResults[0].markModified('deal_tag');
+              userResults[0].save(function (err, saveResult) {
+                if(err){
+                  console.error(err)
+                }
+              })
+              break;
+            }
+          }
+          callback(null,{
+            success: true
+          })
+        }
+      })
+    },
+    sendNotification: function(callback){
+      user.find({userId: requestId}, function(err, userResults){
+        if(err){
+          callback(null,{
+            success: false,
+            errMsg:'数据库错误'
+          })
+        }else{
+          userResults[0].notification.push({
+            msg_type: 11,
+            id: userResults[0].notification.length +1,
+            from:{
+              id: userId
+            },
+            team:{
+              id: teamId
+            }
+          })
+          userResults[0].markModified('notification');
+          userResults[0].save(function (err, saveResult) {
+            if(err){
+              callback(null,{
+                success: false,
+                errMsg:'数据库错误'
+              })
+            }else{
+              callback(null,{
+                success: true
+              })
+            }
+          })
+        }
+      })
+    }
+  }, function (err, finalResults) {
+    if(err){
+      console.error(err)
+      res.send({
+        success: false
+      })
+    }else{
+      if(finalResults.sendNotification.success){
+        res.send({
+          success: true
+        })
+      }
+    }
+  })
+})
 router.get('/logout', function (req, res) {
   delete req.session.user;
   delete req.session.team;
@@ -622,7 +875,7 @@ router.post('/invest/member', function (req, res) {
         userResults[0].notification.push({
           from:{
             id: results.getTopicMsg.owner.id,
-            name: results.getTopicMsg.owner.name
+            //name: results.getTopicMsg.owner.name
           },
           msg_type:5,
           id: userResults[0].notification.length + 1,
@@ -1216,22 +1469,24 @@ router.post('/user/setting', function (req, res) {
         })
       }
     }],
-    updatePassword: function (callback) {
-      if(req.body.changeType == '2'){
+    updateRealName: function (callback) {
+      if(req.body.changeType == '3'){
         user.find({userId: req.body.userId}, function (err, userResults) {
           if(err){
             callback(null,{
               success: false,
-              errMsg: 'find err'
+              errMsg:'find err',
+              errType :'1'
             })
           }else{
-            userResults[0].password = req.body.newPsd;
-            userResults[0].markModified('password');
+            userResults[0].realName.name = req.body.realName;
+            userResults[0].markModified('realName');
             userResults[0].save(function (err, saveResult) {
               if(err){
                 callback(null,{
                   success: false,
-                  errMsg: 'save err'
+                  errMsg: 'save err',
+                  errType: '2'
                 })
               }else{
                 callback(null,{
@@ -1243,7 +1498,51 @@ router.post('/user/setting', function (req, res) {
         })
       }else{
         callback(null,{
-          success: false
+          success: false,
+          errType: '0'
+        })
+      }
+
+    },
+    updatePassword: function (callback) {
+      if(req.body.changeType == '2'){
+        user.find({userId: req.body.userId}, function (err, userResults) {
+          if(err){
+            callback(null,{
+              success: false,
+              errMsg: 'find err',
+              errType: '1'
+            })
+          }else{
+
+            if(req.body.oldPsd !== userResults[0].password){
+              callback(null,{
+                success: false,
+                errMsg:'原来的密码不正确，请重新输入',
+                errType: '2'
+              })
+            }else{
+              userResults[0].password = req.body.newPsd;
+              userResults[0].markModified('password');
+              userResults[0].save(function (err, saveResult) {
+                if(err){
+                  callback(null,{
+                    success: false,
+                    errMsg: 'save err',
+                    errType: '3'
+                  })
+                }else{
+                  callback(null,{
+                    success: true
+                  })
+                }
+              })
+            }
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
         })
       }
 
@@ -1341,6 +1640,73 @@ router.post('/user/setting', function (req, res) {
           success: false
         })
       }
+    },
+    updatePhoneNumber: function(callback){
+      if(req.body.changeType == '7'){
+        user.find({userId: req.body.userId}, function (err, userResults) {
+          console.log('user', userResults[0])
+          if(err){
+            callback(null,{
+              success: false,
+              errMsg: 'find err',
+              errType: '1'
+            })
+          }else{
+            userResults[0].phoneNumber = req.body.phoneNumber;
+            userResults[0].markModified('phoneNumber');
+            userResults[0].save(function (err, saveResults) {
+              if(err){
+                callback(null,{
+                  success: false,
+                  errMsg:'save err',
+                })
+              }else{
+                callback(null,{
+                  success: true
+                })
+              }
+            })
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
+          errType: '0'
+        })
+      }
+    },
+    updateEmail: function(callback){
+      if(req.body.changeType == '8'){
+        user.find({userId: req.body.userId}, function (err, userResults) {
+          if(err){
+            callback(null,{
+              success: false,
+              errMsg: 'find err',
+              errType: '1'
+            })
+          }else{
+            userResults[0].email = req.body.email;
+            userResults[0].markModified('email');
+            userResults[0].save(function (err, saveResult) {
+              if(err){
+                callback(null,{
+                  success: false,
+                  errMsg: 'save err',
+                })
+              }else{
+                callback(null,{
+                  success: true
+                })
+              }
+            })
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
+          errType: '0'
+        })
+      }
     }
   }, function(err, finalResult){
     console.log('f err', err)
@@ -1392,6 +1758,19 @@ router.post('/user/setting', function (req, res) {
             break;
           }else{
             res.send({
+              success: false,
+              errType: finalResult.updatePassword.errType
+            })
+            break;
+          }
+        case '3':
+          if(finalResult.updateRealName.success){
+            res.send({
+              success: true
+            })
+            break;
+          }else{
+            res.send({
               success: false
             })
             break;
@@ -1432,6 +1811,30 @@ router.post('/user/setting', function (req, res) {
             });
             break;
           }
+        case '7':
+          if(finalResult.updatePhoneNumber.success){
+            res.send({
+              success: true
+            })
+            break;
+          }else {
+            res.send({
+              success: false
+            })
+            break;
+          }
+        case '8':
+          if(finalResult.updateEmail.success){
+            res.send({
+              success: true,
+            });
+            break;
+          }else{
+            res.send({
+              success: false
+            })
+            break
+          }
         default:
           res.send({
             success: false,
@@ -1441,6 +1844,254 @@ router.post('/user/setting', function (req, res) {
     }
   })
 });
+//TODO 改
+//其实这里的所有success可以用函数返回的success加errType来返回到前端，这样代码短并且前端也知道是什么出错
 
 
+//后台修改用户基本信息
+router.post('/admin/edit/user', function(req, res){
+  user.find({userId: req.body.userId}, function (err, userResults) {
+    if(err){
+      res.send({
+        success: false,
+        errMsg: '数据库错误'
+      })
+    }else{
+      userResults[0].nickName = req.body.nickName;
+      userResults[0].email = req.body.email;
+      userResults[0].realName.name = req.body.realName;
+      userResults[0].wechat = req.body.wecaht;
+      userResults[0].phoneNumber = req.body.phoneNumber;
+      userResults[0].markModified('nickName');
+      userResults[0].markModified('email');
+      userResults[0].markModified('realName');
+      userResults[0].markModified('wechat');
+      userResults[0].markModified('phoneNumber');
+      userResults[0].save(function (err, saveResult) {
+        if(err){
+          res.send({
+            success: false,
+            errMsg: '保存失败'
+          })
+        }else{
+          res.send({
+            success: true
+          })
+        }
+      })
+
+    }
+  })
+});
+
+//后台查看用户详情
+router.get('/admin/user', function(req, res){
+  async.auto({
+    getUser: function (callback) {
+      console.log('query',req.query)
+      user.find({userId: req.query.userId}, function (err, userResults) {
+        if(err){
+          callback(null,{
+            success: false,
+            userObj: null,
+            errMsg: '数据库查找失败'
+          })
+        }else{
+          callback(null,{
+            success: true,
+            userObj: userResults[0]
+          })
+        }
+      })
+    },
+    getUserTopics: ['getUser', function (results, callback) {
+      if(results.getUser.success){
+        var topics = results.getUser.userObj.topics;
+        async.map(topics, function (item, cb) {
+          topic.find({topicId: item.topicId}, function (err, teamResults) {
+            if(err){
+              cb(null,'find err')
+            }else{
+              cb(null, teamResults[0])
+            }
+          })
+        }, function (err, mapResults) {
+          if(err){
+            console.error(err)
+            callback(null,{
+              success: false,
+              errMsg: 'map err',
+              topics: null
+            })
+          }else{
+            callback(null,{
+              success: true,
+              topics: mapResults
+            })
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
+          errMsg: results.getUser.errMsg,
+          topics: null
+        })
+      }
+    }],
+    getTaskNode: ['getUser', function(results, callback){
+      if(results.getUser.success){
+        var taskArr = results.getUser.userObj.taskArr;
+        var tasks = results.getUser.userObj.tasks;
+        async.map(taskArr, function (item, cb) {
+          task.find({taskId: item.taskId}, function(err, taskResults){
+            if(err){
+              cb(null,'find err')
+            }else{
+              async.map(taskResults[0].taskArr, function (s_item, s_cb) {
+                for(var j = 0; j < s_item.users.length; j++){
+                  if(s_item.users[j].id == req.query.userId){
+                    break;
+                  }
+                }
+                if(j < s_item.users.length){
+                  var taskObj = {
+                    taskMsg: taskResults[0],
+                    taskNode: s_item
+                  }
+                  s_cb(null, taskObj)
+                }else{
+                  s_cb(null)
+                }
+              }, function (err, s_mapResults) {
+                if(err){
+                  cb(null,'err')
+                }else{
+                  //console.log('s_mapResults', s_mapResults)
+                  cb(null, s_mapResults)
+                }
+              })
+            }
+          })
+        }, function (err, mapResults) {
+          if(err){
+            callback(null,{
+              success: false,
+              tasks:[]
+            })
+          }else{
+            var taskNode =  _.compact(mapResults[0]);
+            callback(null,{
+              success: true,
+              tasks: _.compact(mapResults[0])
+            })
+            //console.log('map resuls', _.compact(mapResults[0]))
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
+          errMsg: results.getUser.errMsg,
+          tasks: null
+        })
+      }
+    }],
+    getTaskNodeCreaterName: ['getTaskNode', function (results, callback) {
+      if(results.getTaskNode.success){
+        async.map(results.getTaskNode.tasks, function (item, cb) {
+          user.find({userId: item.taskNode.creater.userId}, function (err, userResults) {
+            if(err){
+             cb(null,'find err')
+            }else{
+              item.taskNode.creater.name = userResults[0].nickName
+              cb(null, item)
+            }
+          })
+        }, function(err, mapResults){
+          if(err){
+            callback(null,{
+              success: false
+            })
+          }else{
+            callback(null)
+          }
+        })
+      }
+    }],
+    getTeams:['getUser', function (results, callback) {
+      if(results.getUser.success){
+        async.map(results.getUser.userObj.teams, function (item, cb){
+          team.find({teamId: item.teamId}, function(err, teamResults){
+            if(err){
+              cb(null,'find err')
+            }else{
+              cb(null, teamResults[0])
+            }
+          })
+        }, function (err, mapResults) {
+          console.log('team map', mapResults);
+          if(err){
+            callback(null,{
+              success: false,
+              errMSg: 'map err',
+              teams: []
+            })
+          }else{
+            callback(null,{
+              success: true,
+              teams: mapResults
+            })
+          }
+        })
+      }else{
+        callback(null,{
+          success: false,
+          errMsg: results.getUser.errMsg,
+          teams: []
+        })
+      }
+    }],
+    getTeamManager: ['getTeams', function (results, callback) {
+      var teams = results.getTeams.teams;
+      async.map(teams, function (item, cb) {
+        user.find({userId: item.manager.id}, function (err, userResults) {
+          if(err){
+            cb(null,'find err')
+          }else{
+            item.manager.name = userResults[0].nickName;
+            cb(null, item)
+          }
+        })
+      }, function (err, mapResults) {
+        if(err){
+          callback(null,{
+            success: false
+          })
+        }else{
+          callback(null)
+        }
+      })
+    }]
+  }, function (err, finalResults) {
+    if(err){
+      res.render('404page')
+    }else{
+      res.render('back-user',{
+        success: true,
+        user: finalResults.getUser.userObj,
+        topics: finalResults.getUserTopics.topics,
+        tasks: finalResults.getTaskNode.tasks,
+        teams: finalResults.getTeams.teams
+      })
+    }
+  })
+})
+
+router.post('/img', function (req, res) {
+  var p = new captchapng(80,30,parseInt(Math.random()*9000+1000)); // width,height,numeric captcha
+  p.color(0, 0, 0, 0);  // First color: background (red, green, blue, alpha)
+  p.color(80, 80, 80, 255); // Second color: paint (red, green, blue, alpha)
+
+  var img = p.getBase64();
+  var imgbase64 = new Buffer(img,'base64');
+})
 module.exports = router;

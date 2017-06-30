@@ -3,7 +3,7 @@
     height:400px;
 }
 .logo-part .logo{
-    background: url("../img/logo.jpg");
+    background: url("../img/logoold.jpg");
     width:250px;
     height:250px;
     background-size: cover;
@@ -25,11 +25,12 @@
     border:1px solid rgba(0,0,0,0.2);
     border-radius: 10px;
     margin-bottom: 15px;
+    position: relative;
 }
 .form-group label{
     display: inline-block;
     width: 39px;
-    line-height: 41px;
+    line-height: 34px;
     border-right: 1px solid rgba(0,0,0,0.2);
 }
 .form-group input{
@@ -41,6 +42,7 @@
     font-size: 16px;
     box-sizing: border-box;
     padding-left: 10px;
+    padding-right: 35px;
 }
 .login-btn{
     width:100%;
@@ -50,6 +52,12 @@
     font-size:19px;
     border-radius: 10px;
     color: white;
+}
+.psd-condition{
+    position: absolute;
+    top: 13px;
+    right:10px;
+    cursor: pointer;
 }
 .icon{
     opacity:0;

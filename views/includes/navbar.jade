@@ -1,4 +1,4 @@
-.navbar
+.m-navbar
 	input#userId(value="#{session.user.userId}" hidden='true')
 	input#userName(value="#{session.user.nickName}" hidden='true')
 	- console.log('session',session.team)
@@ -8,7 +8,7 @@
 			li
 				a.fa.fa-exchange#exchangeTeam(href="#") &nbsp;切换团队
 			li
-				a.fa.fa-mail-forward(href='/join/team') &nbsp;加入团队
+				a.fa.fa-mail-forward#joinTeam(href='#') &nbsp;加入团队
 			li
 				a.fa.fa-plus-circle(href='/new/team') &nbsp;创建团队
 	ul.nav-right
@@ -22,19 +22,27 @@
 				li
 					a.fa.fa-sign-out(href="/logout") &nbsp;退出登录
 		li
-			span.fa.fa-star &nbsp;收藏
-		li
-			a.fa.fa-bell-o(href="/message/all") &nbsp;消息
+			a.fa.fa-bell-o(href="/message/all" data-toggle='tooltip' data-placement="bottom" title="消息")
 			span.new-msg
 			if msg
 				span.new-msg
 		li
-			a(href="/statistics") 统计
+			a.fa.fa-list-alt(href="/statistics" data-toggle='tooltip' data-placement="bottom" title="统计")
 		li
-			a(href="/liao") 回到首页
+			a.fa.fa-home(href="/liao" data-toggle="tooltip" data-placement="bottom" title="首页")
 	.shade#exchangeTeamShade
 		form( name="exchangeTeam")
 			.header 切换团队
 			.team-list#teamList
+	.shade#joinNewTeam
+		form
+			.header 加入新团队
+			.input-group
+				label 团队名称
+				input(name="teamName", placeholder="请输入团队名称")
+			button.m-btn#searchTeam 搜索
+			.search-results
+			.feedback
+
 
 

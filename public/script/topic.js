@@ -2,6 +2,8 @@
  * Created by MengL on 2016/12/14.
  */
 
+
+
 var topicId = $('#Title').data('id');
 var userId = $('.middle').data('userid');
 console.log('topicId', topicId)
@@ -86,7 +88,8 @@ socket.on('public', function(data){
         "<span class='name'>"+data.user.userName+"</span>" +
         "<span class='time'>"+moment(data.chatObj.createAt).format('YYYY.MM.DD HH:MM:SS')+"</span>" +
         "</div>" +
-        "<div class='chatItem'>" +"<img class='preview-img' src='"+data.chatObj.chatContent+"'>"+
+        "<div class='chatItem'>" +"<img class='preview-img' src='"+data.chatObj.chatContent+"'>" +
+        "<span class='file-name'>"+data.chatObj.fileName+"</span>"+
         "</div>" +
         "<span class='chat-operate'>" +
         "<i class='fa fa-thumbs-o-up' id='agree-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatAgree("+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")' ></i>" +
@@ -98,7 +101,6 @@ socket.on('public', function(data){
         "<i class='fa fa-star-o collectFile'></i>"+
         "<i class='fa fa-trash' deleteFile></i>"+
         "</div>")
-
     }else{
       //不可以预览,不等于2那就肯定等于3了
       $("#chatPart").append("<div class='chat-item' data-chatitemid='"+data.chatObj.chatItemId+"' data-chatrecordid='"+data.chatObj.chatRecordId+"'>" +
@@ -115,20 +117,19 @@ socket.on('public', function(data){
         "<i class='fa fa-star-o' id='collect-"+data.chatObj.chatRecordId+"-"+data.chatObj.chatItemId+"' onclick='chatCollect(3,"+data.chatObj.chatItemId+","+data.chatObj.chatRecordId+","+userId+")'></i>" +
         "</span>"+
         "</div>")
-      $("#topicFileCenter .file-box").append("<div id='"+data.file_id+"' data-src='"+data.chatObj.chatContent+"' data-filetype='1' data-upuserid='"+data.user.userId+"' data-upusername='"+data.user.userName+"' class='file-item'>" + "<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName + "下载</a>"+
+      $("#topicFileCenter .file-box").append("<div id='"+data.file_id+"' data-src='"+data.chatObj.chatContent+"' data-filetype='2' data-upuserid='"+data.user.userId+"' data-upusername='"+data.user.userName+"' class='file-item'>" + "<a href='"+data.chatObj.chatContent+"'>"+data.chatObj.fileName + "下载</a>"+
         "<i class='fa fa-star-o collectFile'></i>"+
         "<i class='fa fa-trash' deleteFile></i>"+
         "</div>")
+
+
+
     }
 
   }
-  document.getElementById('chatPart').scrollTop = document.getElementById('chatPart').scrollHeight;
-  $('.chatItem').hover(function(){
-    $(this).children('span').show()
-    $(this).children('span').children('i').hide()
-  }, function(){
-    $(this).children('span').hide()
-  });
+  $('.center-box').scrollTop($('#chatPart')[0].scrollHeight)
+
+
 
   $('.file-item').hover(function () {
     $(this).children('i').show();
@@ -159,6 +160,8 @@ function investToTopic(topicId,userId){
       if(data.success){
         console.log('invest', data)
         swal('邀请成功');
+        $('#memberSetting').hide();
+
         $("button[data-userid='" + userId + "']").parent().remove();
         $(".existed-member-list").prepend("<div class='member-item' data-userid='" + data.user.userId +"'>" +
           "<img class='avatar' src='"+data.user.avatar+"'>" +
@@ -191,6 +194,8 @@ function deleteMember(topicId, userId){
     data: obj,
     success: function (data) {
       if(data.success){
+        $('#memberSetting').hide();
+
         console.log('success');
         $("button[data-userid='" + userId + "']").parent().remove();
       }
@@ -205,11 +210,13 @@ function deleteMember(topicId, userId){
  */
 //TODO this获取不到被点击元素，这是个问题呀？
 function chatAgree(chatItemId, chatRecordId,userId){
+  console.log('clclcllcage')
   var obj = {
     chatItemId: chatItemId,
     userId: userId,
     chatRecordId: chatRecordId
   };
+  console.log('boh',obj)
   $.ajax({
     type:"POST",
     url:"/chat/agree",
@@ -217,7 +224,13 @@ function chatAgree(chatItemId, chatRecordId,userId){
     dataType:'json',
     success:function(data){
       if(data.success){
-        console.log('点赞成功')
+        console.log('$("#agree-"+chatRecordId+"-"+chatItemId)',$("#agree-"+chatRecordId+"-"+chatItemId))
+        console.log('data',$("#agree-"+chatRecordId+"-"+chatItemId).children().length)
+        if($("#agree-"+chatRecordId+"-"+chatItemId).children().length > 0){
+          $("#agree-"+chatRecordId+"-"+chatItemId).children().html("("+data.agree_sum+")");
+        }else{
+          $("#agree-"+chatRecordId+"-"+chatItemId).append("<span class='collect-sum'>("+data.agree_sum+")</span>")
+        }
         $("#agree-"+chatRecordId+"-"+chatItemId).removeClass('fa-thumbs-o-up').addClass('fa-thumbs-up');
         $("#agree-"+chatRecordId+"-"+chatItemId).attr('onclick', "chatDisAgree("+chatItemId+","+chatRecordId+","+userId+")");
         socket.emit('sendNotification',data.from,data.to)
@@ -246,6 +259,11 @@ function chatDisAgree(chatItemId, chatRecordId, userId){
     success: function(data){
       console.log('disagree!',data)
       if(data.success){
+        if(data.agree_sum == 0){
+          $("#agree-"+chatRecordId+"-"+chatItemId).children().html("");
+        }else{
+          $("#agree-"+chatRecordId+"-"+chatItemId).children().html("("+data.agree_sum+")");
+        }
         $("#agree-"+chatRecordId+"-"+chatItemId).removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
         $("#agree-"+chatRecordId+"-"+chatItemId).attr('onclick', "chatAgree("+chatItemId+","+chatRecordId+","+userId+")");
 
@@ -286,15 +304,28 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
         if(data.summary.host){
           //话题主的收藏展现
           if(data.summary.summary.chat_type == 1){
-            $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
-              "<div class='summary-content'>" + data.summary.summary.chatContent +
-              "</div>" +
-              "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
-              "发表于</span>" +
-              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
-              "</div>" +
-              "</div>")
+            if(data.summary.summary.chatContent.length > 20){
+              $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+                "<div class='summary-content' data-toggle='tooltip' title='"+data.summary.summary.chatContent+"' data-placement='bottom'>" + data.summary.summary.chatContent.substr(0,20) +
+                "...</div>" +
+                "<div class='summary-owner'>" +
+                "<span class='ownerName'>" + data.chatItemOwner.nickName +
+                "发表于</span>" +
+                "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+                "</div>" +
+                "</div>")
+            }else{
+              $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+                "<div class='summary-content'>" + data.summary.summary.chatContent +
+                "</div>" +
+                "<div class='summary-owner'>" +
+                "<span class='ownerName'>" + data.chatItemOwner.nickName +
+                "发表于</span>" +
+                "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+                "</div>" +
+                "</div>")
+            }
+
           }
           if(data.summary.summary.chat_type == 2){
             $("#upSummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
@@ -303,7 +334,7 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
               "<span>" + data.summary.summary.fileName+ "</span>"+
               "</div>" +
               "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "<span class='ownerName'>"+ data.chatItemOwner.nickName +
               "发表于</span>" +
               "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
               "</div>" +
@@ -315,7 +346,7 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
               "<a href='"+data.summary.summary.chatContent+"'>" + data.summary.summary.fileName + "</a>" +
               "</div>" +
               "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "<span class='ownerName'>"+ data.chatItemOwner.nickName +
               "发表于</span>" +
               "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
               "</div>" +
@@ -324,15 +355,27 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
 
         }else{
           if(data.summary.summary.chat_type == 1){
-            $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
-              "<div class='summary-content'>" + data.summary.summary.chatContent +
-              "</div>" +
-              "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
-              "发表于</span>" +
-              "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
-              "</div>" +
-              "</div>")
+            if(data.summary.summary.chatContent.length > 20) {
+              $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+                "<div class='summary-content' data-toggle='tooltip' title='"+data.summary.summary.chatContent+"' data-placement='bottom'>" + data.summary.summary.chatContent.substr(0,20) +
+                "</div>" +
+                "<div class='summary-owner'>" +
+                "<span class='ownerName'>"+ data.chatItemOwner.nickName +
+                "发表于</span>" +
+                "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+                "</div>" +
+                "</div>")
+            }else{
+              $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
+                "<div class='summary-content'>" + data.summary.summary.chatContent +
+                "</div>" +
+                "<div class='summary-owner'>" +
+                "<span class='ownerName'>"+ data.chatItemOwner.nickName +
+                "发表于</span>" +
+                "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
+                "</div>" +
+                "</div>")
+            }
           }
           if(data.summary.summary.chat_type == 2){
             $("#mySummary .summary-box").append("<div class='host-summary summary' data-chatid='"+ chatItemId +"' data-chatrecordid='"+chatRecordId+"'>" +
@@ -341,7 +384,7 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
               "<span>" + data.summary.summary.fileName+ "</span>"+
               "</div>" +
               "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "<span class='ownerName'>"+ data.chatItemOwner.nickName +
               "发表于</span>" +
               "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
               "</div>" +
@@ -353,7 +396,7 @@ function chatCollect(chatType,chatItemId,chatRecordId,userId){
               "<a href='"+data.summary.summary.chatContent+"'>" + data.summary.summary.fileName + "</a>" +
               "</div>" +
               "<div class='summary-owner'>" +
-              "<span class='ownerName'>"+data.summary.summary.user.name+
+              "<span class='ownerName'>"+ data.chatItemOwner.nickName +
               "发表于</span>" +
               "<span class='summary-publish-time'>"+moment(data.summary.summary.createAt).format('YYYY.MM.DD')+"</span>" +
               "</div>" +
@@ -398,6 +441,49 @@ function chatDisCollect(chatType,chatItemId, chatRecordId, userId){
           $("#collect-"+chatRecordId+"-"+chatItemId).removeClass('fa-star').addClass('fa-star-o');
           $("#collect-"+chatRecordId+"-"+chatItemId).attr('onclick',"chatCollect("+chatType+","+chatItemId+","+chatRecordId+","+userId+")");
         }
+
+      }
+    }
+  })
+}
+
+
+function chatReply(thisObj,chatType, chatItemId, chatRecordId, r_userId, userId){
+
+  var nickName = $('#topic').data('nickname');
+  var topicTitle = $('.topic-title').html();
+  console.log('tht', chatContent)
+  var replyContent = $(thisObj).siblings('.reply-content').val();
+  if(replyContent == ""){
+    return swal("输入不能为空")
+  }
+  var obj = {
+    chatItemId: chatItemId,
+    chatRecordId: chatRecordId,
+    chatType: chatType,
+    userId: userId,
+    topicId: topicId,
+    r_userId: r_userId,
+    replyContent: replyContent,
+    topicTitle: topicTitle
+  }
+  $.ajax({
+    type:'POST',
+    url:'/chat/reply',
+    data: obj,
+    dataType: 'json',
+    success: function (data) {
+      if(data.success){
+        console.log('success')
+        $(thisObj).parent().hide();
+        $(thisObj).parent().siblings('.replys-box').append("<div class='reply-item'><div class='content'>" +
+          "<span>"+ replyContent+"</span>" +
+          "<span class='user-name'>:"+ nickName+"</span>" +
+          "<div class='time'>" + moment().format('YYYY.MM.DD HH:MM')+
+          "</div>" +
+          "</div>" +
+          "</div>")
+        socket.emit('sendNotification',userId, r_userId)
 
       }
     }
@@ -480,22 +566,8 @@ $('.deleteFile').click(function(e){
 
 
 })
+
 $(document).ready(function() {
-
-  //邀请成员
-  //$('#investMember').click(function (e) {
-  //  e.preventDefault();
-  //  var teamId = $("#investMember").data('teamid');
-  //  $('.invest-code').append("<input value='http://localhost:3000/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>")
-  //
-  //});
-
-
-
-  $("#searchMember").click(function () {
-
-  });
-
   $('.shade').children().click(function (e) {
     e.stopPropagation();
   });
@@ -505,6 +577,94 @@ $(document).ready(function() {
 
   $('.topic').click(function (e) {
     $('.summary-chat').remove();
+  });
+
+  //表格的相关操作
+  var t = $("#editTable").DataTable({
+  "columns":[
+    {"data": null,"title":"1","defaultContent":""},
+    {"data": null,"title":"2","defaultContent":""},
+    {"data": null,"title":"3","defaultContent":""},
+    {"data": null,"title":"4","defaultContent":""},
+    {"data": null,"title":"操作","defaultContent":"<button class='edit-btn' type='button'>编辑</button><button class='save-btn' type='button' style='display: none" +
+    ";'>保存</button>"}
+  ],
+    "language": {
+    "sProcessing": "处理中...",
+      "sLengthMenu": "显示 _MENU_ 项结果",
+      "sZeroRecords": "没有匹配结果",
+      "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+      "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+      "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+      "sInfoPostFix": "",
+      "sSearch": "搜索:",
+      "sUrl": "",
+      "sEmptyTable": "表中数据为空",
+      "sLoadingRecords": "载入中...",
+      "sInfoThousands": ",",
+      "oPaginate": {
+      "sFirst": "首页",
+        "sPrevious": "上页",
+        "sNext": "下页",
+        "sLast": "末页"
+    },
+    "oAria": {
+      "sSortAscending": ": 以升序排列此列",
+        "sSortDescending": ": 以降序排列此列"
+    }
+  }
+});
+  $('.addTable').click(function(e){
+    //清空这个表是放在shade收回还是出现的时候再思考一下
+    $('#addRow').on( 'click', function () {
+      t.row.add([
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]).draw();
+    } );
+    $('#addRow').click();
+    $("#onlineTable").show();
+  });
+
+  $("#editTable").click(function(e){
+    if($(e.target).hasClass('edit-btn')){
+      e.preventDefault()
+      var tds=$(e.target).parents("tr").children();
+      $.each(tds, function(i,val){
+        var jqob=$(val);
+        if(jqob.has('button').length ){return true;}
+        var txt=jqob.text();
+        var put=$("<input type='text'>");
+        put.val(txt);
+        jqob.html(put);
+      });
+      $(e.target).html("保存");
+      $(e.target).hide();
+      $(e.target).next().show();
+      //e.stopPropagation()
+    }
+    if($(e.target).hasClass('save-btn')){
+      var row = $(e.target).parents("tr");
+      console.log('row',row)
+      var tds = $(e.target).parents("tr").children();
+      $.each(tds, function(i, item){
+        //console.log('$(item)',$(item))
+        console.log('item',item);
+        if(!$(item).has('button').length){
+          //console.log('$(item))', $(item)[0])
+          //console.log('data',t.cell($(item)[0]).data())
+          var txt = $(item).children("input").val();
+          console.log('txt',txt)
+          //$(item).html(txt);
+          $("#editTable").DataTable().cell($(item)).data('ddd')
+        }
+      })
+      console.log('data', t.data());
+    }
+
   })
 
   $("#addNewTask").click(function (e) {
@@ -513,17 +673,7 @@ $(document).ready(function() {
     $("#addTask").show();
   });
 
-  //聊天里面的预览图片
-  $('.chat-item .preview-img').click(function (e) {
-    $("#filePreview").children('.box').html("");
-    e.preventDefault();
-    var src = $(this).attr("src");
-    console.log(src)
-    if(src){
-      $("#filePreview").children('.box').prepend("<img src='"+src+"'>");
-      $("#filePreview").show()
-    }
-  });
+
   $('.file-item').hover(function () {
     $(this).children('i').show();
   }, function () {
@@ -535,8 +685,9 @@ $(document).ready(function() {
     if($(e.target).hasClass('file-item')){
       if($(e.target).data('filetype')==1){
         $("#filePreview").children('.box').html("");
+        var fileName = $(e.target).children('.file-name').html();
         e.stopPropagation();
-        $('#filePreview').children('.box').prepend("<img src='"+$(e.target).data('src')+"'>");
+        $("#filePreview").children('.box').prepend('<img src="'+$(e.target).data('src')+'"><span class="name">'+fileName +'</span>');
         $('#filePreview').show();
       }
     };
@@ -590,25 +741,49 @@ $(document).ready(function() {
     if($(e.target).hasClass('chat-operate')){
       $(e.target).children('i').show();
     }
+    if($(e.target).hasClass('preview-img')){
+      $("#filePreview").children('.box').html("");
+      var src = $(e.target).attr("src");
+      var fileName = $(e.target).next('span').html();
+      console.log(src)
+      if(src){
+        $("#filePreview").children('.box').prepend("<img src='"+src+"'>");
+        $("#filePreview").children('.box').append("<span class='name'>"+fileName + "</span>")
+        $("#filePreview").show()
+      }
+    }
+    if($(e.target).hasClass('reply')){
+      $(e.target).parent().siblings('.reply-box').children('textarea').val("");
+      $(e.target).parent().siblings('.reply-box').show();
+    }
+    if($(e.target).hasClass('cancel-reply')){
+      e.preventDefault();
+      $(e.target).parent().hide();
+    }
+
+
+
+  });
+
+//聊天里面的预览图片
+  $('.chat-item .preview-img').click(function (e) {
+    $("#filePreview").children('.box').html("");
+    e.preventDefault();
+    var src = $(this).attr("src");
+    console.log(src)
+    if(src){
+      $("#filePreview").children('.box').prepend("<img src='"+src+"'>");
+      $("#filePreview").show()
+    }
   });
 
 
-
-  $('.chatItem').hover(function(){
-    $(this).children('span').show()
-    $(this).children('span').children('i').hide()
-  }, function(){
-    $(this).children('span').hide()
-  });
-
-  $('textarea').atwho({
+  $('#chatContent').atwho({
     at: "@",
-    data: "http://pai.ihangwei.com/members/topic?topicId=" + $("#Title").data('id')
-    //data: "http://localhost:9000/members/topic?topicId=" + $("#Title").data('id')
+    // data: "http://pai.ihangwei.com/members/topic?topicId=" + $("#Title").data('id')
+    data: "http://localhost:9000/members/topic?topicId=" + $("#Title").data('id')
   });
-  $("textarea").on("keydown.atwho", function (e, flag, query) {
-    e.stopPropagation()
-  });
+
   $('#chatPart').bind('mousewheel', function (e) {
     if(e.deltaY < 0){
       if($("#hasNoRecord").is(":visible") == true){
@@ -646,61 +821,654 @@ $(document).ready(function() {
       success: function (data) {
         console.log(data)
         if(data.success){
-          console.log('history data',data);
+          //console.log('history data',data);
           if(data.hisChat.length == 0){
             $("#hasNoRecord").show();
             $("#tipChat").remove()
           }else{
             data.hisChat.reverse().forEach(function (obj, i, arr) {
               if(obj.chat_type == 1){
-                $("#chatPart").prepend(
-                  "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"'>" +
-                    "<div class='userMsg'>" +
+                //console.log('obj',obj)
+                if(obj.agree.length > 0){
+                  if(obj.reply.length > 0){
+                    //有点赞并且有回复
+                    var loopStr = "";
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    })
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
                       "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
                       "<span class='name'>" + obj.user.name + "</span>" +
                       "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
-                    "</div>" +
-                  "<div class='chatItem'>" +obj.chatContent+
-                  "</div>"+
-                  "<span class='chat-operate'>" +
-                  "<i class='fa fa-thumbs-o-up'  onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "<i class='fa fa-star-o'  onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "</span>"+
-                  "</div>")
+                      "</div>" +
+                      "<div class='chatItem'>" +obj.chatContent+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass +"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+ agreeClick+"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"'  onclick='"+collectClick+"' ></i>" +
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+str+
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    //有点赞没有回复
+
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +obj.chatContent+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick +"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }else{
+                  //没有点赞有回复
+                  if(obj.reply.length > 0){
+                    console.log('has reply',obj.reply)
+                    var loopStr = "";
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    });
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +obj.chatContent+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+str+
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    //没有点赞没有回复
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +obj.chatContent+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }
+
               }
               if(obj.chat_type == 2){
-                $("#chatPart").prepend(
-                  "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"'>" +
-                  "<div class='userMsg'>" +
-                  "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
-                  "<span class='name'>" + obj.user.name + "</span>" +
-                  "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
-                  "</div>" +
-                  "<div class='chatItem'>" +
-                  "<img class='preview-img' src='"+ obj.chatContent +"'>"+
-                  "</div>"+
-                  "<span class='chat-operate'>" +
-                  "<i class='fa fa-thumbs-o-up'  onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "<i class='fa fa-star-o'  onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "</span>"+
-                  "</div>")
+                if(obj.agree.length > 0){
+                  if(obj.reply.length > 0){
+                    console.log('img obj',obj)
+                    var loopStr = "";
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    });
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<img class='preview-img' src='"+ obj.chatContent +"'>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+ str+
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<img class='preview-img' src='"+ obj.chatContent +"'>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"'  onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }else{
+                  if(obj.reply.length > 0){
+                    var loopStr = "";
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    })
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<img class='preview-img' src='"+ obj.chatContent +"'>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+ str+
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<img class='preview-img' src='"+ obj.chatContent +"'>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "<i class='fa fa-reply reply' data-toggle='tooltip' title='回复' data-placement='top'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }
               }
               if(obj.chat_type == 3){
-                $("#chatPart").prepend(
-                  "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"'>" +
-                  "<div class='userMsg'>" +
-                  "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
-                  "<span class='name'>" + obj.user.name + "</span>" +
-                  "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
-                  "</div>" +
-                  "<div class='chatItem'>" +
-                  "<a href='" +obj.chatContent +"'>点击下载</a>"+
-                  "</div>"+
-                  "<span class='chat-operate'>" +
-                  "<i class='fa fa-thumbs-o-up' onclick='chatAgree(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "<i class='fa fa-star-o' onclick='chatCollect(" +obj.chatItemId+ ","+ obj.chatRecordId+")'></i>"+
-                  "</span>"+
-                  "</div>")
+                if(obj.agree.length > 0){
+                  if(obj.reply.length > 0){
+                    var loopStr = "";
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    })
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<a href='" +obj.chatContent +"'>点击下载</a>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "</span>"+ str +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<a href='" +obj.chatContent +"'>点击下载</a>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'><span class='collect-sum'>("+obj.agree.length+")</span></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+data.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }else{
+                  if(obj.reply.length > 0){
+                    var loopStr = "";
+                    obj.reply.forEach(function (obj, i, arr) {
+                      loopStr+="<div class='reply-item'><div class='content'>" +
+                        "<span>" + obj.replyContent +
+                        "</span>" +
+                        "<span class='user-name'>:"+obj.user.name+"</span>" +
+                        "<div class='time'>" + moment(obj.createAt).format('YYYY.MM.DD') +"</div>" +
+                        "</div></div>"
+                    })
+                    var str = "<div class='replys-box'>"+loopStr+"</div>";
+
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<a href='" +obj.chatContent +"'>点击下载</a>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "</span>"+ str +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }else{
+                    var agreeClass;
+                    var collectClass;
+                    var collectClick = "chatCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                    var agreeClick = "chatAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+
+                    for(var j = 0; j < obj.agree.length; j++){
+                      if(obj.agree[j].user.id == userId){
+                        agreeClass = 'fa fa-thumbs-up';
+                        agreeClick = "chatDisAgree("+obj.chatItemId+","+chatRecordId+","+userId+")";
+                        break;
+                      }
+                    }
+                    for(var m = 0; m < obj.collect.length; m++){
+                      if(obj.collect[m].user.id == userId){
+                        collectClass = 'fa fa-star';
+                        collectClick = "chatDisCollect(1,"+obj.chatItemId+","+chatRecordId+","+ userId+")";
+                      }
+                    }
+                    if(j == obj.agree.length){
+                      agreeClass = 'fa fa-thumbs-o-up'
+                    }
+                    if(m == obj.collect.length){
+                      collectClass = 'fa fa-star-o'
+                    }
+                    $("#chatPart").prepend(
+                      "<div data-chatitemid='"+obj.chatItemId+"' data-chatrecordid='"+data.chatRecordId+"' class='chat-item'>" +
+                      "<div class='userMsg'>" +
+                      "<a href='#' class='avatar'><img src='" + obj.user.avatar +"'></a>" +
+                      "<span class='name'>" + obj.user.name + "</span>" +
+                      "<span class='time'>" + moment(obj.createAt).format('YYYY.MM.DD HH:MM:SS') + "</span>" +
+                      "</div>" +
+                      "<div class='chatItem'>" +
+                      "<a href='" +obj.chatContent +"'>点击下载</a>"+
+                      "</div>"+
+                      "<span class='chat-operate'>" +
+                      "<i class='"+agreeClass+"' id='agree-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+agreeClick+"'></i>"+
+                      "<i class='"+collectClass+"' id='collect-"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='"+collectClick+"'></i>"+
+                      "</span>"+
+                      "<div class='replys-box'></div>" +
+                      "<div class='reply-box'>" +
+                      "<textarea class='reply-content'></textarea>" +
+                      "<button class='reply-confirm m-btn reply-btn' id='reply-'"+data.chatRecordId+"-"+obj.chatItemId+"' onclick='chatReply(this,1,"+obj.chatItemId+","+data.chatRecordId+","+obj.user.id+"," +userId +")'>回复</button>" +
+                      "<button class='cancel-reply m-btn reply-btn'>取消</button>" +
+                      "</div>"+
+                      "</div>")
+                  }
+                }
               }
             })
           }
@@ -798,7 +1566,7 @@ $(document).ready(function() {
   //  focus:true
   //});
 
-  //发表聊天
+  //发表聊天,通过点击发送键
   $("#chatSubmit").click(function (e) {
     var reg = /@(\w+)\b\s+/g;
     var atSome = reg.exec($("#chatContent").val());
@@ -863,38 +1631,74 @@ $(document).ready(function() {
       }
     })
   });
-  //$(document).keydown(function (event) {
-  //  var topicId = $("#Title").data("id")
-  //  var e = event || window.event;
-  //  if(e && e.keyCode == 13){
-  //    if($("#chatContent").val()==""){
-  //      return
-  //    }else{
-  //      var chat = $("#chatContent").val();
-  //      var obj = {
-  //        chatContent: chat,
-  //        topicId: topicId,
-  //        chat_type: 1
-  //      };
-  //      e.returnValue = false;
-  //      e.preventDefault();
-  //      $("#chatContent").val("").focus();
-  //      $.ajax({
-  //        type:"POST",
-  //        url:"/chat",
-  //        data: obj,
-  //        dataType:'json',
-  //        success: function (data) {
-  //          if(data.success){
-  //            console.log('data',data)
-  //            socket.emit('public chat', {user:data.user,chat: data.publicChat})
-  //          }
-  //        }
-  //      })
-  //    }
-  //  }
-  //
-  //});
+
+  $(document).on('keydown', ' textarea', function(e) {
+    if(e.keyCode == 13 && (e.metaKey || e.ctrlKey)) {
+      var reg = /@(\w+)\b\s+/g;
+      var atSome = reg.exec($("#chatContent").val());
+      console.log("reg", atSome)
+      e.preventDefault();
+      var topicId = $("#Title").data("id");
+      if($("#chatContent").val()==""){
+        return
+      }
+      var chat = $("#chatContent").val();
+
+      var obj = {
+        chatContent: chat,
+        topicId: topicId,
+        chat_type: 1,
+        at: atSome
+      };
+      e.returnValue = false;
+      e.preventDefault();
+      $("#chatContent").val("").focus();
+      $.ajax({
+        type:"POST",
+        url:"/chat",
+        data: obj,
+        dataType:'json',
+        success: function (data) {
+          if(data.success){
+            console.log('聊天',data)
+            var chatItem = {};
+            if(data.at){
+              //有at说明肯定是文本信息
+              socket.emit('sendNotification',data.user.userId, data.toUser.userId)
+              chatItem = {
+                chat_type: data.publicChat.chat_type,
+                at: true,
+                toUser: data.toUser,
+                chatObj:{
+                  chatItemId: data.publicChat.chatItemId,
+                  chatContent: data.publicChat.chatContent,
+                  chatRecordId: data.chatRecordId,
+                  createAt: data.publicChat.createAt
+                },
+                user: data.user,
+                topicId: topicId
+              }
+            }else{
+              chatItem = {
+                chat_type: data.publicChat.chat_type,
+                at: false,
+                chatObj:{
+                  chatItemId: data.publicChat.chatItemId,
+                  chatContent: data.publicChat.chatContent,
+                  chatRecordId: data.chatRecordId,
+                  createAt: data.publicChat.createAt
+                },
+                user: data.user,
+                topicId: topicId
+              }
+            }
+            socket.emit('public chat', chatItem);
+          }
+        }
+      })
+    }
+  })
+
 
   //获取本团队下面的所有成员列表
   $("#membersSetting").click(function () {
@@ -914,8 +1718,13 @@ $(document).ready(function() {
       dataType:'json',
       success: function(data){
         if(data.success){
-          console.log('data',data)
+
+          $("#memberSetting .existed-member-list").html("")
+          $("#memberSetting .unexisted-member-list").html("")
+          $("#memberSetting .operate-part").html("")
           $('#memberSetting').show();
+
+          console.log('data',data)
           var existMembers=[],
             unexistMembers=[];
           data.teamMembers.forEach(function (obj, i, arr) {
@@ -926,61 +1735,71 @@ $(document).ready(function() {
                break;
              }
             }
-            console.log('j',j);
             if(j == data.topicMembers.length){
               unexistMembers.push(obj)
             }
           });
-          //console.log('unexistMembers',unexistMembers)
-          //console.log('existMembers',existMembers)
-          $("#memberSetting .existed-member-list").html("")
-          $("#memberSetting .unexisted-member-list").html("")
+
           if($("#membersSetting").data("hostornot") == true){
             //话题主点开的成员列表如何展示
-            if(existMembers.length == 0){
-              return $("#memberSetting .existed-member-list").prepend("<div>暂无成员</div>")
+            if(existMembers.length == 1){
+              $("#memberSetting .existed-member-list").prepend("<div>暂无成员</div>")
+              $("#memberSetting .operate-part").append("<button class='m-btn' id='investMember'>邀请加入</button>")
+
+            }else{
+              existMembers.forEach(function (obj, i, arr) {
+                //渲染成员列表
+                if(userId !== obj.userId){
+                  $("#memberSetting .existed-member-list").append("<div class='member-item' data-userid='" + obj.userId +"'>" +
+                    "<img class='avatar' src='"+obj.avatar+"'>" +
+                    "<span>" + obj.name +
+                    "</span>" +
+                    "<button class='manage-btn  del' data-userid='"+ obj.userId + "' onclick='deleteMember(" + topicId + "," + obj.userId + ")'>删除</button>" +
+                    "</div>")
+                }
+              });
+              $("#memberSetting .operate-part").append("<button class='m-btn' id='investMember'>邀请加入</button>")
+              $("#memberSetting .operate-part").append("<button class='m-btn' id='operate'>成员管理</button>")
+
             }
-            existMembers.forEach(function (obj, i, arr) {
-              //渲染成员列表
-              if(userId !== obj.userId){
-                $("#memberSetting .existed-member-list").after("<div class='member-item' data-userid='" + obj.userId +"'>" +
+            if(unexistMembers.length==0){
+              console.log('if')
+              $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'>" +
+                "<input id='investCode' value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>" +
+                "</div>" +
+                "<div class='copy-part'><button class='m-btn' id='copyInvestCode' data-clipboard-target='investCode'>点击复制链接</button></div>")
+            }else{
+              console.log('else')
+              unexistMembers.forEach((function (obj, i, arr) {
+                $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
+                  "<div class='userMsg'>" +
                   "<img class='avatar' src='"+obj.avatar+"'>" +
                   "<span>" + obj.name +
                   "</span>" +
-                  "<button class='manage-btn  del' data-userid='"+ obj.userId + "' onclick='deleteMember(" + topicId + "," + obj.userId + ")'>删除</button>" +
+                  "</div>" +
+                  "<button class='add' data-userid='"+ obj.userId + "' onclick='investToTopic(" + topicId + "," + obj.userId + ")'>邀请</button>" +
                   "</div>")
-              }
-            });
-            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='operate'>成员管理</button>")
-            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='investMember'>邀请加入</button>")
+              }));
+              $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'>" +
+                "<input id='investCode' value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>" +
+                "</div>" +
+                "<div class='copy-part'><button class='m-btn' id='copyInvestCode' data-clipboard-target='investCode'>点击复制链接</button></div>")
+
+            }
             $("#operate").click(function (e) {
               e.preventDefault();
-              console.log('clicl')
               $(".manage-btn").show()
             });
             $('#investMember').click(function (e) {
               e.preventDefault();
               $(".unexisted-member-list").show();
             })
-            if(unexistMembers.length==0){
-              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
-            }
-            unexistMembers.forEach((function (obj, i, arr) {
-              $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
-                "<div class='userMsg'>" +
-                "<img class='avatar' src='"+obj.avatar+"'>" +
-                "<span>" + obj.name +
-                "</span>" +
-                "</div>" +
-                "<button class='add' data-userid='"+ obj.userId + "' onclick='investToTopic(" + topicId + "," + obj.userId + ")'>邀请</button>" +
-                "</div>")
-            }));
-            $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
 
           }else{
             //话题成员点开的成员列表
+            $("#memberSetting .operate-part").append("<button class='m-btn' id='investMember'>邀请加入</button>")
             existMembers.forEach(function (obj, i, arr) {
               $("#memberSetting .existed-member-list").append("<div  class='member-item' data-userid='"+obj.userId+"'>" +
                 "<div class='usrMsg'>" +
@@ -990,32 +1809,51 @@ $(document).ready(function() {
                 "</div>" +
                 "</div>")
             });
-            $("#memberSetting .existed-member-list").after("<button class='m-btn' id='investMember'>邀请加入</button>");
             $('#investMember').click(function (e) {
               e.preventDefault();
               $(".unexisted-member-list").show();
             })
             if(unexistMembers.length==0){
-              return $("#memberSetting .unexisted-member-list").prepend("<div class='tip'>通过链接邀请新成员</div>" +
-                "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
-            }
-
-            unexistMembers.forEach(function (obj, i, arr) {
-              $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
-                "<div class='userMsg'>" +
-                "<img class='avatar' src='"+obj.avatar+"'>" +
-                "<span>" + obj.name +
-                "</span>" +
+              $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'>" +
+                "<input id='investCode' value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>" +
                 "</div>" +
-                "<button class='add' data-userId='"+ obj.userId + "' onclick='investToTopic(" + topicId + "," + obj.userId + ")'>邀请</button>" +
-                "</div>")
-            })
-            $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
-              "<div class='invest-code'><input  value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'></div>")
+                "<div class='copy-part'><button class='m-btn' id='copyInvestCode' data-clipboard-target='investCode'>点击复制链接</button></div>")
+            }else{
+              unexistMembers.forEach(function (obj, i, arr) {
+                $("#memberSetting .unexisted-member-list").append("<div  class='member-item'>" +
+                  "<div class='userMsg'>" +
+                  "<img class='avatar' src='"+obj.avatar+"'>" +
+                  "<span>" + obj.name +
+                  "</span>" +
+                  "</div>" +
+                  "<button class='add' data-userId='"+ obj.userId + "' onclick='investToTopic(" + topicId + "," + obj.userId + ")'>邀请</button>" +
+                  "</div>")
+              })
+
+              $("#memberSetting .unexisted-member-list").append("<div class='tip'>通过链接邀请新成员</div>" +
+                "<div class='invest-code'>" +
+                "<input id='investCode' value='http://pai.ihangwei.com/invest?tag=1&teamId="+teamId+"&userId="+userId+"&topicId="+topicId+"'>" +
+                "</div>" +
+                "<div class='copy-part'><button class='m-btn' id='copyInvestCode' data-clipboard-target='investCode'>点击复制链接</button></div>")
+            }
 
           }
 
-
+          var client = new ZeroClipboard($("#copyInvestCode"));
+          client.on('aftercopy', function (e) {
+            //e.preventDefault();
+            swal('复制成功，去粘贴')
+          })
+          //client.on('ready', function(e){
+          //  e.preventDefault();
+          //  client.on('copy', function (event) {
+          //    event.clipboardData.setData('text/plain', $("#investCode").val())
+          //  })
+          //  client.on('aftercopy', function(event){
+          //    swal('复制成功')
+          //  })
+          //})
 
         }
       }
@@ -1116,7 +1954,7 @@ $(document).ready(function() {
         //console.log(data)
         if(data.success){
           //swal("话题已成功关闭")
-          window.location.href="http://www.pai.ihangwei.com/liao";
+          window.location.href="/liao";
 
         }else{
           swal("话题关闭异常，请稍后再试")
@@ -1144,6 +1982,7 @@ $(document).ready(function() {
       dataType: 'json',
       success: function (data) {
         if(data.success){
+          console.log('data',data)
           if(data.summaryChat){
             var summarychat = data.summaryChat;
             var chatItemId = data.chatItemId;

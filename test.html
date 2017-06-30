@@ -3,22 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <title>at</title>
-    <link rel="stylesheet" href="./public/css/jquery.atwho.min.css">
+    <link rel="stylesheet" href="./public/css/main.css">
+    <link rel="stylesheet" href="./public/css/dataTables.bootstrap.css">
+    <style>
+        .save-btn{
+            display: none;
+        }
+    </style>
 </head>
 <body>
-<textarea id="editable">
-
-</textarea>
+<table id="editTable">
+</table>
+<button id="addRow">添加一行</button>
 </body>
 <script src="node_modules/jquery/dist/jquery.min.js"></script>
-<script src="public/script/jquery.caret.js"></script>
-<script src="public/script/jquery.atwho.min.js"></script>
+<script src="public/script/jquery.dataTables.js"></script>
+<script src="public/script/dataTables.bootstrap.min.js"></script>
+
 <script>
-    $(function () {
-        $('#editable').atwho({
-            at: "@",
-            data: ["one", "two", "three"],
-        })
+$(function () {
+    var t = $("#editTable").DataTable({
+        "columns":[
+            {"data": null,"title":"1","defaultContent":""},
+            {"data": null,"title":"2","defaultContent":""},
+            {"data": null,"title":"3","defaultContent":""},
+            {"data": null,"title":"4","defaultContent":""},
+            {"data": null,"title":"操作","defaultContent":"<button class='edit-btn' type='button'>编辑</button><button class='save-btn' type='button' style='display: none" +
+            ";'>保存</button>"}
+        ],
+        "language": {
+            "sProcessing": "处理中...",
+            "sLengthMenu": "显示 _MENU_ 项结果",
+            "sZeroRecords": "没有匹配结果",
+            "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+            "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+            "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+            "sInfoPostFix": "",
+            "sSearch": "搜索:",
+            "sUrl": "",
+            "sEmptyTable": "表中数据为空",
+            "sLoadingRecords": "载入中...",
+            "sInfoThousands": ",",
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "上页",
+                "sNext": "下页",
+                "sLast": "末页"
+            },
+            "oAria": {
+                "sSortAscending": ": 以升序排列此列",
+                "sSortDescending": ": 以降序排列此列"
+            }
+        }
+    });
+    $('#addRow').on( 'click', function () {
+        t.row.add([
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+        ]).draw();
+    } );
+    $('#addRow').click();
+    $("#editTable").click(function(e){
+        if($(e.target).hasClass('edit-btn')){
+            e.preventDefault()
+            var tds=$(e.target).parents("tr").children();
+            $.each(tds, function(i,val){
+                var jqob=$(val);
+                if(jqob.has('button').length ){return true;}
+                var txt=jqob.text();
+                var put=$("<input type='text'>");
+                put.val(txt);
+                jqob.html(put);
+            });
+            $(e.target).html("保存");
+            $(e.target).hide();
+            $(e.target).next().show();
+            //e.stopPropagation()
+        }
+        if($(e.target).hasClass('save-btn')){
+            var row = $("#editTable").DataTable().row($(e.target).parents("tr"));
+            console.log('row',row)
+            var tds = $(e.target).parents("tr").children();
+            $.each(tds, function(i, item){
+                //console.log('$(item)',$(item))
+                console.log('item',typeof $(item));
+                if(!$(item).has('button').length){
+                    //console.log('$(item))', $(item)[0])
+                    //console.log('data',t.cell($(item)[0]).data())
+                    var txt = $(item).children("input").val();
+                    console.log('txt',txt)
+                    //$(item).html(txt);
+                    t.cell($(item)).data('ddd')
+                }
+            })
+        }
+
     })
+
+})
 </script>
 </html>

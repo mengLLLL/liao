@@ -45,11 +45,11 @@
     padding:6px 0 5px 0;
 }
 .item .name {
-    color: #29a9e8;
+    color: #fff;
     display: inline-block;
     padding: 2px 5px;
     border-radius: 4px;
-    background: #ffd3cf;
+    background: #222831;
     margin-right: 4px;
 }
 .msg-header{
@@ -95,4 +95,10 @@
     transform: translateX(-50%);
     font-size: 40px;
     text-shadow: 0 2px 0 #fff,0 -2px 0 #f8f6f2;
+}
+.agreeOne{
+    margin-left: 10px;
+}
+.refuseOne{
+    margin-left: 10px;
 }

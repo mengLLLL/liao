@@ -97,22 +97,23 @@ function getUploadParams(fileName, filePath) {
 }
 
 //触发上传文件
-$("#addFile").bind('click',function (e) {
+$(".addFile").bind('click',function (e) {
   e.preventDefault();
-  $("#chooseFile").trigger('click')
-
+  $(this).siblings('.input-group').children('.file-upload-group').children('.chooseFile').trigger('click');
 });
 
-$("#chooseFile").change(function(){
-  $("#confirmFile").click()
-})
+$(".chooseFile").change(function(){
+  $(this).siblings('.confirmFile').click();
+});
 
 /**
  * @param obj   this
  * @param type   upload file type
  */
 function uploadFile(obj, type) {
-  var files = $('.file-upload-group').children("input[type=file]")[0].files;
+  var files = $(obj).siblings('input[type=file]')[0].files;
+  console.log('files', files)
+  //var files = $('.file-upload-group').children("input[type=file]")[0].files;
   var fileType = files[0].name.split('.').pop().toLowerCase();
   var file_type;
   var chat_type;
@@ -164,7 +165,7 @@ function uploadFile(obj, type) {
         $(obj).parent().children("input[type=hidden]")[0].value = src;
         $(obj).removeClass("btn-warning");
         $(obj).addClass("btn-success");
-        swal('上传成功！')
+        //swal('上传成功！')
         console.log('上传成功')
         // 当作聊天信息发送过去,并且存在话题的files数组中
         var dataObj = {
@@ -208,7 +209,7 @@ function uploadFile(obj, type) {
       } else {
         $(obj).removeClass("btn-warning");
         $(obj).addClass("btn-danger");
-        alert("上传失败");
+        swal("上传失败,请重试");
       }
       $("#file-progress").remove();
     });

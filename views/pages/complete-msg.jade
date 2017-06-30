@@ -1,0 +1,32 @@
+extends ../layout-no-navbar
+block style
+	link(href="/css/complete-msg.css" rel='stylesheet')
+block content
+	.container
+		.center
+			.header
+				h3 完善个人信息
+			form.form-horizontal
+				.form-group
+					label.control-label.col-sm-2 真实姓名
+					.col-sm-3
+						input.form-control(type="text" name='realName')
+					label.control-label.col-sm-2 电话号码
+					.col-sm-3
+						input.form-control(type="number" name='phoneNumber')
+				.form-group
+					label.control-label.col-sm-2 邮箱
+					.col-sm-3
+						input.form-control(type="text" name='email')
+					label.control-label.col-sm-2 微信
+					.col-sm-3
+						input.form-control(type='text' name='wechat')
+				.form-group
+					label.control-label.col-sm-2 部门
+					.col-sm-3
+						input.form-control(type="text" name='department')
+					label.control-label.col-sm-2 职位
+					.col-sm-3
+						input.form-control(type="text" name='job')
+				button.btn.btn-default.col-sm-offset-5#complete 提交
+	script(src="/script/complete-msg.js")

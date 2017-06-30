@@ -32,6 +32,7 @@
     "socket.io": "1.7.2"
   },
   "devDependencies": {
+    "captchapng": "0.0.1",
     "lodash": "4.17.3"
   }
 }

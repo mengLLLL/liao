@@ -132,10 +132,18 @@
 }
 
 input[name='newpassword1']{
-    display: block;
+    display: inline-block;
+    margin-right: 5px;
 }
 input[name='newpassword2']{
-    display: block;
+    display: inline-block;
+    margin-right: 5px;
+
+}
+input[name='oldpassword']{
+    display: inline-block;
+    margin-right: 5px;
+
 }
 .file-upload-group{
     display: none;
@@ -144,4 +152,7 @@ input[name='newpassword2']{
     width: 100%;
     font-size: 16px;
 
+}
+#investCode{
+    margin-bottom: 10px;
 }
